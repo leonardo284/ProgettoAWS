@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.",
+  "main": "vite.config.js",
+  "dependencies": {
+    "csstype": "^3.2.3",
+    "entities": "^7.0.0",
+    "esbuild": "^0.27.2",
+    "estree-walker": "^2.0.2",
+    "fdir": "^6.5.0",
+    "magic-string": "^0.30.21",
+    "nanoid": "^3.3.11",
+    "picocolors": "^1.1.1",
+    "picomatch": "^4.0.3",
+    "postcss": "^8.5.6",
+    "rollup": "^4.54.0",
+    "source-map-js": "^1.2.1",
+    "tinyglobby": "^0.2.15",
+    "vite": "^7.3.0",
+    "vue": "^3.5.26"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
