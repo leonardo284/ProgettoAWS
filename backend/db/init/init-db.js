@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
 
-const Team = require("../models/Team");
-const Player = require("../models/Player");
-const Referee = require("../models/Referee");
+const Team = require("../../src/models/team");
+const Player = require("../../src/models/player");
+const Referee = require("../../src/models/referee");
 
 const MONGO_URI = "mongodb://localhost:27017/campionato";
 
@@ -88,10 +88,10 @@ function requiredString(value, fallback) {
 
 async function init() {
   try {
-    console.log("🔌 Connessione a MongoDB...");
+    console.log("Connessione a MongoDB...");
     await mongoose.connect(MONGO_URI);
 
-    console.log("🧹 Pulizia collezioni...");
+    console.log("Pulizia collezioni...");
     await Team.deleteMany({});
     await Player.deleteMany({});
     await Referee.deleteMany({});

@@ -2,30 +2,29 @@ const express = require('express');
 const playerController = require('../controllers/playerController');
 const teamController = require('../controllers/teamController');
 const matchController = require('../controllers/matchController');
+const team = require('../models/team');
 
 const router = express.Router();
 
-router.get('/', moviesController.showIndex);
-
-router.get('/movies-crud', moviesController.showCrud);
-
+router.get('/', playerController.listPlayers);
+/*
 router.route('/api/teams')
 	.get(teamController.listMovies)
 	.post(teamController.createMovie);
 
 router.route('/api/teams/:id')
-	.get(moviesController.readMovie)
+	.get(teamController.readMovie)
 	.put(teamController.updateMovie)
 	.delete(teamController.deleteMovie);
-
+*/
 router.route('/api/players')
-	.get(playerController.listMovies)
-	.post(playerController.createMovie);
+	.get(playerController.listPlayers)
+	.post(playerController.createPlayer);
 
 router.route('/api/players/:id')
-	.get(playerController.readMovie)
-	.put(playerController.updateMovie)
-	.delete(playerController.deleteMovie);
+	.get(playerController.readPlayer)
+	.put(playerController.updatePlayer)
+	.delete(playerController.deletePlayer);
 
 
 
