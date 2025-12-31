@@ -6,6 +6,7 @@ const Team = require("../../src/models/team");
 const Player = require("../../src/models/player");
 const Referee = require("../../src/models/referee");
 const Match = require("../../src/models/match");
+const Standing = require("../../src/models/standing");
 
 
 const MONGO_URI = "mongodb://localhost:27017/campionato";
@@ -154,6 +155,26 @@ async function generateMatches(teams, referees) {
   await Match.insertMany(matchDocs);
 }
 
+async function generateStandings(teams) {
+  const season = "2025/2026";
+
+  const standings = teams.map(team => ({
+    season,
+    teamId: team.teamId,
+    nome: team.nome,
+    matchPlayed: 0,
+    matchWon: 0,
+    matchDrawn: 0,
+    matchLost: 0,
+    goals: 0,
+    goalsConceded: 0,
+    points: 0
+  }));
+
+  await Standing.insertMany(standings);
+}
+
+
 
 function safeBirthDate(value) {
   // range realistico: 18–45 anni
@@ -253,6 +274,10 @@ async function init() {
     const refereesDb = await Referee.find();
 
     await generateMatches(teamsDb, refereesDb);
+
+    console.log("Inizializzazione classifica...");
+    await generateStandings(teamsDb);
+
 
 
     console.log("DB inizializzato con Mongoose");

@@ -98,3 +98,18 @@ exports.listMatchesByTeam = (req, res) => {
     .then(matches => res.json(matches))
     .catch(err => res.status(500).send(err));
 };
+
+
+exports.listLastMatches = async (req, res) => {
+  try {
+    const limit = Number(req.params.limit) || 5
+
+    const matches = await Match.find()
+      .sort({ dataOra: -1 })
+      .limit(limit)
+
+    res.json(matches)
+  } catch (err) {
+    res.status(500).json({ message: 'Errore nel recupero match' })
+  }
+}

@@ -1,14 +1,26 @@
 <template>
   <tr>
     <td>{{ position }}</td>
-    <td>{{ team.nome }}</td>
-    <td>{{ team.matchPlayed }}</td>
-    <td>{{ team.matchWon }}</td>
-    <td>{{ team.matchDrawn }}</td>
-    <td>{{ team.matchLost }}</td>
-    <td>{{ team.goals }}</td>
-    <td>{{ team.goalsConceded }}</td>
-    <td>{{ team.goalDifference }}</td>
-    <td>{{ team.points }}</td>
+    <td>{{ row.nome }}</td>
+    <td>{{ row.matchPlayed }}</td>
+    <td>{{ row.matchWon }}</td>
+    <td>{{ row.matchDrawn }}</td>
+    <td>{{ row.matchLost }}</td>
+    <td>{{ row.goals }}</td>
+    <td>{{ row.goalsConceded }}</td>
+    <td>{{ row.points }}</td>
   </tr>
 </template>
+
+<script setup>
+defineProps({
+  row: {
+    type: Object,
+    required: true
+  },
+  position: {
+    type: Number,
+    required: true
+  }
+});
+</script>

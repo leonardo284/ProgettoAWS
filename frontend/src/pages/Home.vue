@@ -10,6 +10,16 @@
   <AppFooter />
 </template>
 
+<script setup>
+import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
+
+import HomeLastMatches from '@/components/home/HomeLastMatches.vue'
+import HomeStandings from '@/components/home/HomeStandings.vue'
+import HomeTeams from '@/components/home/HomeTeams.vue'
+</script>
+
+
 
 <!--<template>
   <div>

@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getLastMatches } from '@/services/matchesService'
+import MatchCard from '@/components/matches/MatchCard.vue'
+
 
 const matches = ref([])
 
@@ -18,3 +20,4 @@ onMounted(async () => {
     />
   </section>
 </template>
+

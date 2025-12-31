@@ -1,7 +1,16 @@
+<script setup>
+defineProps({
+  match: {
+    type: Object,
+    required: true
+  }
+})
+</script>
+
 <template>
   <div class="match-card">
-    <div>{{ match.squadre.casa.nome }}</div>
-    <strong>{{ match.risultato?.casa ?? '-' }} - {{ match.risultato?.trasferta ?? '-' }}</strong>
-    <div>{{ match.squadre.trasferta.nome }}</div>
+    <strong>{{ match.squadre.casa.nome }}</strong>
+    vs
+    <strong>{{ match.squadre.trasferta.nome }}</strong>
   </div>
 </template>

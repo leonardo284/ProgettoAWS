@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getTeams } from '@/services/teamsService'
-
+import TeamCard from '@/components/teams/TeamCard.vue'
 const teams = ref([])
 
 onMounted(async () => {

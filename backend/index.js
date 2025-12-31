@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
+const cors = require('cors')
 const app = express();
 const path = require('path');
 const router = require('./src/routes/routes');
@@ -11,6 +11,7 @@ mongoose.connect('mongodb://localhost:27017/campionato');
 
 global.appRoot = path.resolve(__dirname);
 
+app.use(cors()) 
 // Automatically parse request body as JSON
 app.use(express.json());
 

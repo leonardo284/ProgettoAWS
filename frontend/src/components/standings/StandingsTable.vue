@@ -10,18 +10,28 @@
         <th>P</th>
         <th>GF</th>
         <th>GS</th>
-        <th>DR</th>
-        <th>Pt</th>
+        <th>PT</th>
       </tr>
     </thead>
 
     <tbody>
-      <StandingsRow
-        v-for="(team, index) in standings"
-        :key="team.teamId"
-        :team="team"
+      <StandingRow
+        v-for="(row, index) in standings"
+        :key="row.teamId"
+        :row="row"
         :position="index + 1"
       />
     </tbody>
   </table>
 </template>
+
+<script setup>
+import StandingRow from "./StandingsRow.vue";
+
+defineProps({
+  standings: {
+    type: Array,
+    required: true
+  }
+});
+</script>
