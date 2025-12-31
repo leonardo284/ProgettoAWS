@@ -2,30 +2,28 @@ const express = require('express');
 const playerController = require('../controllers/playerController');
 const teamController = require('../controllers/teamController');
 const matchController = require('../controllers/matchController');
-const team = require('../models/team');
 
 const router = express.Router();
 
+// PLAYERS
 router.get('/', playerController.listPlayers);
-/*
-router.route('/api/teams')
-	.get(teamController.listMovies)
-	.post(teamController.createMovie);
+router.get('/players/:id', playerController.readPlayer);
+router.put('/players/:id', playerController.updatePlayer);
+router.delete('/players/:id', playerController.deletePlayer);
 
-router.route('/api/teams/:id')
-	.get(teamController.readMovie)
-	.put(teamController.updateMovie)
-	.delete(teamController.deleteMovie);
-*/
-router.route('/api/players')
-	.get(playerController.listPlayers)
-	.post(playerController.createPlayer);
+// TEAMS
+router.get('/teams', teamController.listTeams);
+router.get('/teams/:id', teamController.readTeam);
+router.get('/teams/:teamName/players', playerController.listPlayersByTeam);
 
-router.route('/api/players/:id')
-	.get(playerController.readPlayer)
-	.put(playerController.updatePlayer)
-	.delete(playerController.deletePlayer);
+// MATCHES
+router.post('/matches', matchController.createMatch);
+router.get('/matches/:id', matchController.readMatch);
+router.put('/matches/:id', matchController.updateMatch);
+router.delete('/matches/:id', matchController.deleteMatch);
 
-
+// extra richieste
+router.get('/matches/giornata/:giornata', matchController.listMatchesByGiornata);
+router.get('/matches/squadra/:teamId', matchController.listMatchesByTeam);
 
 module.exports = router;

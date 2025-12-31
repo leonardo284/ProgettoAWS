@@ -2,7 +2,6 @@ const Team = require('../models/team');
 
 /**
  * GET /teams
- * Ritorna tutti i team
  */
 exports.listTeams = (req, res) => {
   Team.find()
@@ -12,7 +11,6 @@ exports.listTeams = (req, res) => {
 
 /**
  * GET /teams/:id
- * Ritorna un team per ID
  */
 exports.readTeam = (req, res) => {
   Team.findById(req.params.id)
@@ -27,7 +25,6 @@ exports.readTeam = (req, res) => {
 
 /**
  * POST /teams
- * Crea un nuovo team
  */
 exports.createTeam = (req, res) => {
   const team = new Team(req.body);
@@ -39,7 +36,6 @@ exports.createTeam = (req, res) => {
 
 /**
  * PUT /teams/:id
- * Aggiorna un team
  */
 exports.updateTeam = (req, res) => {
   Team.findByIdAndUpdate(req.params.id, req.body, {
@@ -57,7 +53,6 @@ exports.updateTeam = (req, res) => {
 
 /**
  * DELETE /teams/:id
- * Elimina un team
  */
 exports.deleteTeam = (req, res) => {
   Team.findByIdAndDelete(req.params.id)

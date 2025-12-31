@@ -5,6 +5,8 @@ const path = require("path");
 const Team = require("../../src/models/team");
 const Player = require("../../src/models/player");
 const Referee = require("../../src/models/referee");
+const Match = require("../../src/models/match");
+
 
 const MONGO_URI = "mongodb://localhost:27017/campionato";
 
@@ -52,6 +54,107 @@ function parseOrRandom(value, min, max) {
   return isNaN(n) ? randomInt(min, max) : n;
 }
 
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+async function generateMatches(teams, referees) {
+  if (teams.length !== 20) {
+    throw new Error("Devono esserci ESATTAMENTE 20 squadre");
+  }
+
+  const stagione = "2025/2026";
+  const startDate = new Date("2025-09-07T15:00:00");
+
+  let matchIdCounter = 1;
+
+  const teamList = [...teams];
+  const rounds = [];
+
+  // circle method
+  for (let round = 0; round < 19; round++) {
+    const matches = [];
+
+    for (let i = 0; i < 10; i++) {
+      const home = teamList[i];
+      const away = teamList[19 - i];
+
+      matches.push({ home, away });
+    }
+
+    rounds.push(matches);
+
+    // rotate (tranne il primo)
+    const fixed = teamList[0];
+    const rest = teamList.slice(1);
+    rest.unshift(rest.pop());
+    teamList.splice(0, teamList.length, fixed, ...rest);
+  }
+
+  const allMatches = [];
+
+  // ANDATA
+  rounds.forEach((round, index) => {
+    round.forEach(match => {
+      allMatches.push({
+        giornata: index + 1,
+        casa: match.home,
+        trasferta: match.away
+      });
+    });
+  });
+
+  // RITORNO (inverti casa/trasferta)
+  rounds.forEach((round, index) => {
+    round.forEach(match => {
+      allMatches.push({
+        giornata: index + 20,
+        casa: match.away,
+        trasferta: match.home
+      });
+    });
+  });
+
+  const matchDocs = [];
+
+  for (const m of allMatches) {
+    const arbitriRandom = shuffle(referees).slice(0, 4);
+
+    matchDocs.push({
+      matchId: matchIdCounter++,
+      stagione,
+      giornata: m.giornata,
+      dataOra: addDays(startDate, (m.giornata - 1) * 7),
+      stadio: m.casa.stadio,
+      arbitri: {
+        principale: arbitriRandom[0],
+        guardalinee1: arbitriRandom[1],
+        guardalinee2: arbitriRandom[2],
+        quartoUomo: arbitriRandom[3]
+      },
+      squadre: {
+        casa: {
+          teamId: m.casa.teamId,
+          nome: m.casa.nome
+        },
+        trasferta: {
+          teamId: m.trasferta.teamId,
+          nome: m.trasferta.nome
+        }
+      }
+    });
+  }
+
+  await Match.insertMany(matchDocs);
+}
+
+
 function safeBirthDate(value) {
   // range realistico: 18–45 anni
   const start = new Date(1980, 0, 1);
@@ -91,10 +194,9 @@ async function init() {
     console.log("Connessione a MongoDB...");
     await mongoose.connect(MONGO_URI);
 
-    console.log("Pulizia collezioni...");
-    await Team.deleteMany({});
-    await Player.deleteMany({});
-    await Referee.deleteMany({});
+    console.log("DROP DATABASE (reset completo)...");
+    await mongoose.connection.dropDatabase();
+
 
     console.log("Import teams...");
     const teams = JSON.parse(
@@ -145,6 +247,13 @@ async function init() {
       });
     }
     await Referee.insertMany(referees);
+
+    console.log("Generazione partite...");
+    const teamsDb = await Team.find();
+    const refereesDb = await Referee.find();
+
+    await generateMatches(teamsDb, refereesDb);
+
 
     console.log("DB inizializzato con Mongoose");
   } catch (err) {

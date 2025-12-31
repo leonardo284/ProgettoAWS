@@ -17,17 +17,43 @@ const TeamInMatchSchema = new mongoose.Schema({
   formazione: FormationSchema
 }, { _id: false });
 
+const RefereeRoleSchema = {
+  refereeId: Number,
+  nome: String,
+  cognome: String
+};
+
 const RefereesInMatchSchema = new mongoose.Schema({
-  principale: { refereeId: Number, nome: String, cognome: String },
-  guardalinee1: { refereeId: Number, nome: String, cognome: String },
-  guardalinee2: { refereeId: Number, nome: String, cognome: String },
-  quartoUomo: { refereeId: Number, nome: String, cognome: String }
+  principale: RefereeRoleSchema,
+  guardalinee1: RefereeRoleSchema,
+  guardalinee2: RefereeRoleSchema,
+  quartoUomo: RefereeRoleSchema
 }, { _id: false });
 
 const MatchSchema = new mongoose.Schema({
   matchId: { type: Number, unique: true },
-  stagione: String,
-  dataOra: Date,
+
+  stagione: {
+    type: String,
+    required: true
+  },
+
+  giornata: {
+    type: Number,
+    required: true
+  },
+
+  dataOra: {
+    type: Date,
+    required: true
+  },
+
+  stadio: {
+    type: String,
+    required: true
+  },
+
+  spettatori: Number,
 
   stato: {
     type: String,
@@ -46,13 +72,13 @@ const MatchSchema = new mongoose.Schema({
   arbitri: RefereesInMatchSchema,
 
   squadre: {
-    casa: TeamInMatchSchema,
-    trasferta: TeamInMatchSchema
+    casa: { type: TeamInMatchSchema, required: true },
+    trasferta: { type: TeamInMatchSchema, required: true }
   },
 
   risultato: {
-    casa: Number,
-    trasferta: Number
+    casa: { type: Number, default: 0 },
+    trasferta: { type: Number, default: 0 }
   },
 
   eventi: [{
