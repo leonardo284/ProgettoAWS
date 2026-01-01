@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/pages/Home.vue'
+import Home from '@/pages/Home.vue'
+import StandingsPage from '@/pages/StandingPage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -7,7 +8,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: Home
+    },
+    {
+      path: '/classifica',
+      name: 'standings',
+      component: StandingsPage
     }
   ]
 })

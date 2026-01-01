@@ -1,20 +1,21 @@
+<script setup>
+import { RouterLink } from 'vue-router'
+</script>
+
 <template>
   <header class="navbar">
     <div class="navbar__logo">
-      <span>Serie A</span>
+      <RouterLink to="/" class="logo-link">Serie A</RouterLink>
     </div>
 
     <nav class="navbar__menu">
-      <a href="#">Calendario e Risultati</a>
-      <a href="#">Classifica</a>
-      <a href="#">Statistiche</a>
-      <a href="#">Club</a>
+      <RouterLink to="/calendario">Calendario e Risultati</RouterLink>
+      <RouterLink to="/classifica">Classifica</RouterLink>
+      <RouterLink to="/statistiche">Statistiche</RouterLink>
+      <RouterLink to="/club">Club</RouterLink>
     </nav>
   </header>
 </template>
-
-<script setup>
-</script>
 
 <style scoped>
 .navbar {
@@ -31,6 +32,11 @@
   font-weight: bold;
 }
 
+.logo-link {
+  color: white;
+  text-decoration: none;
+}
+
 .navbar__menu {
   display: flex;
   gap: 1.5rem;
@@ -43,6 +49,11 @@
 }
 
 .navbar__menu a:hover {
+  text-decoration: underline;
+}
+
+/* evidenzia link attivo */
+.navbar__menu a.router-link-active {
   text-decoration: underline;
 }
 </style>

@@ -2,6 +2,8 @@
 import StandingsTable from '@/components/standings/StandingsTable.vue'
 import { ref, onMounted } from 'vue'
 import { getStandings } from '@/services/standingsService'
+import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
 
 const standings = ref([])
 
@@ -11,9 +13,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section>
-    <h2>Classifica</h2>
-
-    <StandingsTable :standings="standings.slice(0, 5)" />
-  </section>
+  <AppNavbar />
+  <main class="container">
+    <h1>Classifica Serie A</h1>
+    <StandingsTable :standings="standings" />
+  </main>
+  <AppFooter />
 </template>

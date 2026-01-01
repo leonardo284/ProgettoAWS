@@ -20,13 +20,3 @@ import HomeTeams from '@/components/home/HomeTeams.vue'
 </script>
 
 
-
-<!--<template>
-  <div>
-    <h1>HOME</h1>
-    <p>Prova</p>
-  </div>
-</template>
-
-<script setup>
-</script>-->
