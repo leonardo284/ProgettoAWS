@@ -1,13 +1,16 @@
-import api from './api';
+import api from './api'
 
-export const getTeams = () => {
-  return api.get('/teams');
-};
+export async function getTeams() {
+  const res = await api.get('/teams')
+  return res.data
+}
 
-export const getTeamById = (id) => {
-  return api.get(`/teams/${id}`);
-};
+export async function getTeamById(id) {
+  const res = await api.get(`/teams/${id}`)
+  return res.data
+}
 
-export const getPlayersByTeam = (teamName) => {
-  return api.get(`/teams/${teamName}/players`);
-};
+export async function getPlayersByTeam(teamName) {
+  const res = await api.get(`/teams/${teamName}/players`)
+  return res.data
+}
