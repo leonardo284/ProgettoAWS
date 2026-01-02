@@ -14,7 +14,18 @@ const router = createRouter({
       path: '/classifica',
       name: 'standings',
       component: StandingsPage
+    },
+    {
+      path: '/club',
+      name: 'teams',
+      component: () => import('@/pages/TeamsPage.vue')
+    },
+    {
+      path: '/club/:id',
+      name: 'TeamDetail',
+      component: () => import('@/pages/TeamDetailPage.vue')
     }
+
   ]
 })
 

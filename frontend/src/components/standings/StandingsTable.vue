@@ -1,37 +1,74 @@
-<template>
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Squadra</th>
-        <th>PG</th>
-        <th>V</th>
-        <th>N</th>
-        <th>P</th>
-        <th>GF</th>
-        <th>GS</th>
-        <th>PT</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <StandingRow
-        v-for="(row, index) in standings"
-        :key="row.teamId"
-        :row="row"
-        :position="index + 1"
-      />
-    </tbody>
-  </table>
-</template>
-
 <script setup>
-import StandingRow from "./StandingsRow.vue";
+import StandingsRow from "./StandingsRow.vue";
 
-defineProps({
+const props = defineProps({
   standings: {
     type: Array,
-    required: true
+    required: true,
+    default: () => []
   }
 });
 </script>
+
+<template>
+  <div class="table-wrapper">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th style="width: 50px">#</th>
+          <th class="th-team">SQUADRA</th>
+          <th class="th-data">PG</th>
+          <th class="th-data">V</th>
+          <th class="th-data">N</th>
+          <th class="th-data">P</th>
+          <th class="th-data">GF</th>
+          <th class="th-data">GS</th>
+          <th class="th-data">DR</th>
+          <th class="th-data">PT</th>
+          <th style="width: 150px">ULTIME 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <StandingsRow
+          v-for="(row, index) in standings"
+          :key="row.teamId || index"
+          :row="row"
+          :position="index + 1"
+        />
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<style scoped>
+.table-wrapper {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+.s-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.s-table th {
+  padding: 15px 5px;
+  border-bottom: 2px solid #eee;
+  font-weight: 800;
+  color: #000;
+  text-align: center;
+}
+
+/* Centratura Intestazione Squadra */
+.th-team {
+  text-align: left !important;
+  padding-left: 80px !important; /* Sposta il testo verso il centro */
+}
+
+.th-data {
+  width: 50px;
+}
+</style>
