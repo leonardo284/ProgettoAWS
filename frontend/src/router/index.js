@@ -24,6 +24,11 @@ const router = createRouter({
       path: '/club/:id',
       name: 'TeamDetail',
       component: () => import('@/pages/TeamDetailPage.vue')
+    },
+    {
+      path: '/match/:id',
+      name: 'MatchDetail',
+      component: () => import('@/pages/MatchDetailPage.vue')
     }
 
   ]
