@@ -21,9 +21,14 @@ const router = createRouter({
       component: () => import('@/pages/TeamsPage.vue')
     },
     {
-      path: '/club/:id',
-      name: 'TeamDetail',
-      component: () => import('@/pages/TeamDetailPage.vue')
+    path: '/club/:id',
+      component: () => import('@/pages/TeamDetailPage.vue'),
+      children: [
+        { path: '', name: 'TeamOverview', component: () => import('@/components/teams/tabs/TeamOverviewTab.vue') },
+        { path: 'squadra', name: 'TeamSquad', component: () => import('@/components/teams/tabs/TeamSquadTab.vue') },
+        { path: 'calendario', name: 'TeamMatches', component: () => import('@/components/teams/tabs/TeamMatchesTab.vue') },
+        { path: 'statistiche', name: 'TeamStats', component: () => import('@/components/teams/tabs/TeamStatsTab.vue') }
+      ]
     },
     {
       path: '/match/:id',
