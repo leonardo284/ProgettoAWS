@@ -13,7 +13,7 @@ exports.listTeams = (req, res) => {
  * GET /teams/:id
  */
 exports.readTeam = (req, res) => {
-  Team.findById(req.params.id)
+  Team.findOne({ teamId: parseInt(req.params.id) })
     .then(team => {
       if (!team) {
         return res.status(404).send('Team not found');
@@ -38,7 +38,7 @@ exports.createTeam = (req, res) => {
  * PUT /teams/:id
  */
 exports.updateTeam = (req, res) => {
-  Team.findByIdAndUpdate(req.params.id, req.body, {
+  Team.findOneAndUpdate({ teamId: parseInt(req.params.id) }, req.body, {
     new: true,
     runValidators: true
   })
@@ -55,7 +55,7 @@ exports.updateTeam = (req, res) => {
  * DELETE /teams/:id
  */
 exports.deleteTeam = (req, res) => {
-  Team.findByIdAndDelete(req.params.id)
+  Team.findOneAndDelete({ teamId: parseInt(req.params.id) })
     .then(team => {
       if (!team) {
         return res.status(404).send('Team not found');
