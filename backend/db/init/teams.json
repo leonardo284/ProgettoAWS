@@ -30,7 +30,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/txvurv1420507301.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/yxtrst1420507320.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/uvsqrx1421077633.jpg"
-    ]
+    ],
+    "allenatore": "Paulo Fonseca"
   },
   {
     "id": 2,
@@ -63,7 +64,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/a38vbc1546086008.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/d3kt481546086018.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/squqvw1421077900.jpg"
-    ]
+    ],
+    "allenatore": "Gian Piero Gasperini"
   },
   {
     "id": 3,
@@ -96,7 +98,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/7wbt6r1731314380.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/zuswee1731314356.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/ldvj2k1731314405.jpg"
-    ]
+    ],  
+    "allenatore": "Vincenzo Italiano"
   },
   {
     "id": 4,
@@ -129,7 +132,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/4krzi51546618271.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/bgjtri1546618288.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/62p93c1546618459.jpg"
-    ]
+    ],
+    "allenatore": "Davide Nicola"    
   },
   {
     "id": 5,
@@ -162,7 +166,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/9f3bvs1729631566.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/puryv11729631595.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/mu45zq1729631627.jpg"
-    ]
+    ],
+    "allenatore": "Cesc Fàbregas"
   },
   {
     "id": 6,
@@ -190,7 +195,8 @@
     "logo": null,
     "badge": "https://r2.thesportsdb.com/images/media/team/badge/6ng2vy1579708291.png",
     "banner": null,
-    "fanart": []
+    "fanart": [],
+    "allenatore": "Eugenio Corini"
   },
   {
     "id": 7,
@@ -223,7 +229,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/umhsw61754421476.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/4t03be1754421502.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/ah355x1754421524.jpg"
-    ]
+    ],
+    "allenatore": "Raffaele Palladino"
   },
   {
     "id": 8,
@@ -256,7 +263,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/33xsyr1546116217.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/gmiji51546116538.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/498e5l1546116934.jpg"
-    ]
+    ],
+    "allenatore": "Patrick Vieira"
   },
   {
     "id": 9,
@@ -289,7 +297,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/qtvqtr1424396718.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/sqtuvr1424396733.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/yqxxys1424396749.jpg"
-    ]
+    ],
+    "allenatore": "Paolo Zanetti"
   },
   {
     "id": 10,
@@ -322,7 +331,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/6rnerf1546088608.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/rtwqpv1429294176.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/uvswsr1421077771.jpg"
-    ]
+    ],
+    "allenatore": "Simone Inzaghi"
   },
   {
     "id": 11,
@@ -355,7 +365,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/vqh3kj1548875099.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/rqwwqx1424111979.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/wvvpws1430771058.jpg"
-    ]
+    ],
+    "allenatore": "Luciano Spalletti"
   },
   {
     "id": 12,
@@ -388,7 +399,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/pwvd461709342718.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/6mu88f1709342685.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/bxwzwp1709342643.jpg"
-    ]
+    ],
+    "allenatore": "Maurizio Sarri"
   },
   {
     "id": 13,
@@ -421,7 +433,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/o3eudv1715845352.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/ajtfyb1715845358.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/awtrh01715845364.jpg"
-    ]
+    ],
+    "allenatore": "Marco Giampaolo"
   },
   {
     "id": 14,
@@ -454,7 +467,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/ztq1e01731273514.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/cvna4p1731273533.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/pljdjb1731273555.jpg"
-    ]
+    ],
+    "allenatore": "Antonio Conte"
   },
   {
     "id": 15,
@@ -487,7 +501,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/nnqmvk1546597130.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/9i3xs61546597137.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/96jo2f1546597145.jpg"
-    ]
+    ],
+    "allenatore": "Fabio Pecchia"
   },
   {
     "id": 16,
@@ -512,7 +527,8 @@
     "logo": "https://www.thesportsdb.com/images/media/team/logo/z3rlb01764157901.png",
     "badge": "https://r2.thesportsdb.com/images/media/team/badge/2eso9w1579708309.png",
     "banner": null,
-    "fanart": []
+    "fanart": [],
+    "allenatore": "Filippo Inzaghi"
   },
   {
     "id": 17,
@@ -545,7 +561,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/usutts1420507624.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/usxxtx1421077390.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/rtwvpq1421077414.jpg"
-    ]
+    ],
+    "allenatore": "Claudio Ranieri"
   },
   {
     "id": 18,
@@ -578,7 +595,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/ydta1g1546545371.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/cf335g1546545381.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/qxyz5e1546545391.jpg"
-    ]
+    ],
+    "allenatore": "Fabio Grosso"
   },
   {
     "id": 19,
@@ -611,7 +629,8 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/quyvrx1426211614.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/uwxyrq1426211523.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/yuvprw1426211761.jpg"
-    ]
+    ],
+    "allenatore": "Paolo Vanoli"
   },
   {
     "id": 20,
@@ -644,6 +663,7 @@
       "https://r2.thesportsdb.com/images/media/team/fanart/j1h7gd1546522007.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/k3hog61546522082.jpg",
       "https://r2.thesportsdb.com/images/media/team/fanart/hthbjw1546522097.jpg"
-    ]
+    ],
+    "allenatore": "Kosta Runjaić"
   }
 ]
