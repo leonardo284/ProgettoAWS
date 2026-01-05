@@ -65,6 +65,102 @@ function addDays(date, days) {
   return d;
 }
 
+/**
+ * Simula il gioco delle prime N giornate di campionato
+ */
+async function playInitialMatches(nGiornate) {
+  console.log(`\n--- Simulazione prime ${nGiornate} giornate ---`);
+  
+  // Recupero i match delle giornate interessate
+  const matches = await Match.find({ giornata: { $lte: nGiornate } }).sort({ giornata: 1 });
+
+  for (const match of matches) {
+    // Risultato random: casa (0-4), trasferta (0-4)
+    const goalsC = Math.floor(Math.random() * 5);
+    const goalsT = Math.floor(Math.random() * 5);
+
+    // Recupero i giocatori usando il teamId salvato nello schema
+    const playersCasa = await Player.find({ "currentTeam.teamId": match.squadre.casa.teamId });
+    const playersTrasferta = await Player.find({ "currentTeam.teamId": match.squadre.trasferta.teamId });
+
+    const eventiMatch = [];
+
+    // Generazione marcatori per la squadra di casa
+    for (let i = 0; i < goalsC; i++) {
+      if (playersCasa.length > 0) {
+        const p = playersCasa[Math.floor(Math.random() * playersCasa.length)];
+        eventiMatch.push({
+          minuto: Math.floor(Math.random() * 90) + 1,
+          tipo: "GOAL",
+          playerId: p.playerId,
+          squadra: "casa"
+        });
+      }
+    }
+
+    // Generazione marcatori per la squadra in trasferta
+    for (let i = 0; i < goalsT; i++) {
+      if (playersTrasferta.length > 0) {
+        const p = playersTrasferta[Math.floor(Math.random() * playersTrasferta.length)];
+        eventiMatch.push({
+          minuto: Math.floor(Math.random() * 90) + 1,
+          tipo: "GOAL",
+          playerId: p.playerId,
+          squadra: "trasferta"
+        });
+      }
+    }
+
+    // Aggiorno il match
+    match.risultato.casa = goalsC;
+    match.risultato.trasferta = goalsT;
+    match.eventi = eventiMatch;
+    match.stato = "FINITA";
+    match.spettatori = Math.floor(Math.random() * 30000) + 5000;
+    await match.save();
+
+    // Aggiorno la classifica
+    await updateStanding(match.stagione, match.squadre.casa.teamId, match.squadre.trasferta.teamId, goalsC, goalsT);
+  }
+}
+
+/**
+ * Aggiorna le statistiche della classifica per le due squadre
+ */
+async function updateStanding(season, idCasa, idTrasferta, goalsC, goalsT) {
+  const sCasa = await Standing.findOne({ season, teamId: idCasa });
+  const sTrasferta = await Standing.findOne({ season, teamId: idTrasferta });
+
+  if (!sCasa || !sTrasferta) return;
+
+  // Incremento partite e goals
+  sCasa.matchPlayed += 1;
+  sTrasferta.matchPlayed += 1;
+  sCasa.goals += goalsC;
+  sCasa.goalsConceded += goalsT;
+  sTrasferta.goals += goalsT;
+  sTrasferta.goalsConceded += goalsC;
+
+  // Calcolo punti e risultati
+  if (goalsC > goalsT) {
+    sCasa.matchWon += 1;
+    sCasa.points += 3;
+    sTrasferta.matchLost += 1;
+  } else if (goalsC < goalsT) {
+    sTrasferta.matchWon += 1;
+    sTrasferta.points += 3;
+    sCasa.matchLost += 1;
+  } else {
+    sCasa.matchDrawn += 1;
+    sTrasferta.matchDrawn += 1;
+    sCasa.points += 1;
+    sTrasferta.points += 1;
+  }
+
+  await sCasa.save();
+  await sTrasferta.save();
+}
+
 async function generateMatches(teams, referees) {
   if (teams.length !== 20) {
     throw new Error("Devono esserci ESATTAMENTE 20 squadre");
@@ -236,6 +332,8 @@ async function init() {
       }))
     );
 
+    const teamsDb = await Team.find();
+
     console.log("Import players...");
     const players = JSON.parse(
       fs.readFileSync(
@@ -245,17 +343,24 @@ async function init() {
     );
 
     await Player.insertMany(
-      players.map(p => ({
-        playerId: p.idEsterno || p.id,
-        nome: safeName(p.nome),
-        cognome: safeSurname(p.cognome),
-        ruolo: p.ruolo,
-        nazionalita: p.nazionalita,
-        dataNascita: safeBirthDate(p.dataNascita),
-        altezzaCm: parseOrRandom(p.altezza, 160, 205),
-        pesoKg: parseOrRandom(p.peso, 60, 100),
-        currentTeam: { nome: p.squadra }
-      }))
+      players.map(p => {
+        // Cerco il team nel DB per associare l'ID corretto
+        const matchTeam = teamsDb.find(t => t.nome.toLowerCase() === p.squadra.toLowerCase());
+        return {
+          playerId: p.idEsterno || p.id,
+          nome: safeName(p.nome),
+          cognome: safeSurname(p.cognome),
+          ruolo: p.ruolo,
+          nazionalita: p.nazionalita,
+          dataNascita: safeBirthDate(p.dataNascita),
+          altezzaCm: parseOrRandom(p.altezza, 160, 205),
+          pesoKg: parseOrRandom(p.peso, 60, 100),
+          currentTeam: { 
+              teamId: matchTeam ? matchTeam.teamId : null, 
+              nome: p.squadra 
+          },
+        };
+      })
     );
 
     console.log("Creazione arbitri...");
@@ -270,13 +375,16 @@ async function init() {
     await Referee.insertMany(referees);
 
     console.log("Generazione partite...");
-    const teamsDb = await Team.find();
     const refereesDb = await Referee.find();
 
     await generateMatches(teamsDb, refereesDb);
 
     console.log("Inizializzazione classifica...");
     await generateStandings(teamsDb);
+
+    console.log("Simulazione campionato...");
+    // Impostare il numero di giornare da simulare
+    await playInitialMatches(15); 
 
 
 
