@@ -160,74 +160,91 @@ async function updateStanding(season, idCasa, idTrasferta, goalsC, goalsT) {
   await sCasa.save();
   await sTrasferta.save();
 }
-
+/**
+ * Genera il calendario completo distribuendo i match su più giorni e orari
+ */
 async function generateMatches(teams, referees) {
   if (teams.length !== 20) {
     throw new Error("Devono esserci ESATTAMENTE 20 squadre");
   }
 
   const stagione = "2025/2026";
-  const startDate = new Date("2025-09-07T15:00:00");
+  // Punto di inizio: il venerdì della prima settimana di campionato
+  const baseStartDate = new Date("2025-09-05T00:00:00");
 
   let matchIdCounter = 1;
-
   const teamList = [...teams];
   const rounds = [];
 
-  // circle method
+  // Algoritmo circle method per generare gli accoppiamenti
   for (let round = 0; round < 19; round++) {
     const matches = [];
-
     for (let i = 0; i < 10; i++) {
       const home = teamList[i];
       const away = teamList[19 - i];
-
       matches.push({ home, away });
     }
-
     rounds.push(matches);
 
-    // rotate (tranne il primo)
     const fixed = teamList[0];
     const rest = teamList.slice(1);
     rest.unshift(rest.pop());
     teamList.splice(0, teamList.length, fixed, ...rest);
   }
 
-  const allMatches = [];
+  const allMatchesRaw = [];
 
-  // ANDATA
-  rounds.forEach((round, index) => {
-    round.forEach(match => {
-      allMatches.push({
-        giornata: index + 1,
-        casa: match.home,
-        trasferta: match.away
+  // Genero i match di andata e ritorno
+  for (let roundIdx = 0; roundIdx < 38; roundIdx++) {
+    const isRitorno = roundIdx >= 19;
+    const currentRound = rounds[isRitorno ? roundIdx - 19 : roundIdx];
+    
+    // Definisco gli slot orari richiesti per la giornata
+    // Giorno 0 = Sabato, Giorno 1 = Domenica, Giorno 2 = Lunedì
+    const slots = [
+      { dayOffset: 1, hour: 18, min: 0 },  // Sabato 18:00 (1 partita)
+      { dayOffset: 1, hour: 21, min: 0 },  // Sabato 21:00 (1 partita)
+      { dayOffset: 2, hour: 12, min: 30 }, // Domenica 12:30 (1 partita)
+      { dayOffset: 2, hour: 15, min: 0 },  // Domenica 15:00 (3 partite)
+      { dayOffset: 2, hour: 15, min: 0 },
+      { dayOffset: 2, hour: 15, min: 0 },
+      { dayOffset: 2, hour: 18, min: 0 },  // Domenica 18:00 (1 partita)
+      { dayOffset: 2, hour: 21, min: 0 },  // Domenica 21:00 (1 partita)
+      { dayOffset: 3, hour: 21, min: 0 }   // Lunedì 21:00 (1 partita)
+      // Nota: lo slot mancante (10° match) lo assegno al sabato pomeriggio per completare
+      ,{ dayOffset: 1, hour: 15, min: 0 } 
+    ];
+
+    // Mischio i match della giornata per assegnarli randomicamente agli slot
+    const shuffledRoundMatches = shuffle([...currentRound]);
+
+    shuffledRoundMatches.forEach((m, i) => {
+      const slot = slots[i];
+      const matchDate = new Date(baseStartDate);
+      // Sposto la data alla settimana corretta e aggiungo l'offset del giorno
+      matchDate.setDate(baseStartDate.getDate() + (roundIdx * 7) + slot.dayOffset);
+      matchDate.setHours(slot.hour, slot.min, 0, 0);
+
+      allMatchesRaw.push({
+        giornata: roundIdx + 1,
+        casa: isRitorno ? m.away : m.home,
+        trasferta: isRitorno ? m.home : m.away,
+        dataOra: matchDate
       });
     });
-  });
-
-  // RITORNO (inverti casa/trasferta)
-  rounds.forEach((round, index) => {
-    round.forEach(match => {
-      allMatches.push({
-        giornata: index + 20,
-        casa: match.away,
-        trasferta: match.home
-      });
-    });
-  });
+  }
 
   const matchDocs = [];
+  const refereesDb = await Referee.find();
 
-  for (const m of allMatches) {
-    const arbitriRandom = shuffle(referees).slice(0, 4);
+  for (const m of allMatchesRaw) {
+    const arbitriRandom = shuffle([...refereesDb]).slice(0, 4);
 
     matchDocs.push({
       matchId: matchIdCounter++,
       stagione,
       giornata: m.giornata,
-      dataOra: addDays(startDate, (m.giornata - 1) * 7),
+      dataOra: m.dataOra,
       stadio: m.casa.stadio,
       arbitri: {
         principale: arbitriRandom[0],
@@ -236,14 +253,8 @@ async function generateMatches(teams, referees) {
         quartoUomo: arbitriRandom[3]
       },
       squadre: {
-        casa: {
-          teamId: m.casa.teamId,
-          nome: m.casa.nome
-        },
-        trasferta: {
-          teamId: m.trasferta.teamId,
-          nome: m.trasferta.nome
-        }
+        casa: { teamId: m.casa.teamId, nome: m.casa.nome },
+        trasferta: { teamId: m.trasferta.teamId, nome: m.trasferta.nome }
       }
     });
   }
