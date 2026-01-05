@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
 import StandingsPage from '@/pages/StandingPage.vue'
+import CalendarPage from '@/pages/CalendarListPage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -34,7 +35,14 @@ const router = createRouter({
       path: '/match/:id',
       name: 'MatchDetail',
       component: () => import('@/pages/MatchDetailPage.vue')
-    }
+    },
+    {
+    path: '/calendario',
+    name: 'Calendar',
+    component: CalendarPage,
+    meta: { title: 'Calendario e Risultati - Campionato 2025/2026' }
+  },
+
 
   ]
 })

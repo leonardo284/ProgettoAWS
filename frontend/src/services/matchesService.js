@@ -25,12 +25,6 @@ export async function deleteMatch(id) {
   return res.data
 }
 
-// BY GIORNATA
-export async function getMatchesByGiornata(giornata) {
-  const res = await api.get(`/matches/giornata/${giornata}`)
-  return res.data
-}
-
 // BY TEAM
 export async function getMatchesByTeam(teamId) {
   const res = await api.get(`/matches/squadra/${teamId}`)
@@ -48,7 +42,7 @@ export async function getLastMatches(limit = 10) {
   let allMatches = resMatches.data;
 
   // 2. Logica di selezione:
-  // Filtriamo le partite FINITE
+  // Filtro le partite FINITE
   const finishedMatches = allMatches
     .filter(m => m.stato === "FINITA")
     .sort((a, b) => new Date(b.dataOra) - new Date(a.dataOra)); // Dalla più recente alla più vecchia
@@ -56,10 +50,10 @@ export async function getLastMatches(limit = 10) {
   let displayMatches = [];
 
   if (finishedMatches.length > 0) {
-    // Se ci sono partite finite, prendiamo le ultime N
+    // Se ci sono partite finite, prendo le ultime N
     displayMatches = finishedMatches.slice(0, limit);
   } else {
-    // Se nessuna è finita, prendiamo le prime da giocare
+    // Se nessuna è finita, prendo le prime da giocare
     displayMatches = allMatches
       .filter(m => m.stato === "NON_INIZIATA")
       .sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra))
@@ -79,4 +73,42 @@ export async function getLastMatches(limit = 10) {
       }
     }
   })
+}
+
+export async function getMatchesByGiornata(giornata) {
+  // 1. Recupero simultaneo di match e team per avere i loghi
+  const [resMatches, teams] = await Promise.all([
+    api.get(`/matches/giornata/${giornata}`),
+    getTeams()
+  ])
+
+  // 2. Mappatura per inserire i loghi delle squadre
+  const matchesWithLogos = resMatches.data.map(match => {
+    const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId)
+    const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId)
+
+    return {
+      ...match,
+      squadre: {
+        casa: { ...match.squadre.casa, logo: teamCasa?.logo },
+        trasferta: { ...match.squadre.trasferta, logo: teamTrasferta?.logo }
+      }
+    }
+  })
+
+  return matchesWithLogos
+}
+
+/**
+ * Raggruppa e ordina i match per data
+ */
+export const groupMatchesByDate = (matches) => {
+  const sortedMatches = [...matches].sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra))
+
+  return sortedMatches.reduce((groups, match) => {
+    const dateKey = new Date(match.dataOra).toISOString().split('T')[0]
+    if (!groups[dateKey]) groups[dateKey] = []
+    groups[dateKey].push(match)
+    return groups
+  }, {})
 }

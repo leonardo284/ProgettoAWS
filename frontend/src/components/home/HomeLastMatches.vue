@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getLastMatches } from '@/services/matchesService'
-import MatchCard from '@/components/matches/MatchCard.vue'
+import MatchCard from '@/components/matches/MatchCardHome.vue'
 
 const matches = ref([])
 

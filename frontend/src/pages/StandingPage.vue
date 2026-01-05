@@ -2,7 +2,7 @@
 import StandingsTable from '@/components/standings/StandingsTable.vue'
 import { ref, onMounted } from 'vue'
 import { getStandings } from '@/services/standingsService'
-import { getTeams } from '@/services/teamsService' // Importiamo anche i team
+import { getTeams } from '@/services/teamsService' 
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 
@@ -18,8 +18,8 @@ onMounted(async () => {
     const teamInfo = teamsData.find(t => t.teamId === row.teamId)
     return {
       ...row,
-      logo: teamInfo?.logo || '', // Aggiungiamo il logo mancante
-      nome: teamInfo?.nome || row.nome // Ci assicuriamo che il nome sia corretto
+      logo: teamInfo?.logo || '', 
+      nome: teamInfo?.nome || row.nome 
     }
   })
 })
