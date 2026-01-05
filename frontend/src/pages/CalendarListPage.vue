@@ -31,6 +31,7 @@ onMounted(async () => {
     <div class="calendar-view">
       <h1 class="page-title">CALENDARIO E RISULTATI</h1>
 
+      <!--Navigatore delle giornate-->
       <div class="matchday-nav-wrapper">
         <div class="matchday-selector">
           <button @click="loadData(currentDay - 1)" :disabled="currentDay <= 1" class="nav-btn">&lt;</button>
@@ -39,6 +40,9 @@ onMounted(async () => {
         </div>
       </div>
 
+      <!--Quando la pagina viene caricata per la prima volta, l'oggetto groupedMatches è inizialmente
+       vuoto, senza l'if, Vue proverebbe a ciclare su un oggetto vuoto o non ancora popolato dal 
+       service, perquesto uso loading-->
       <div v-if="!loading" class="calendar-content">
         <div v-for="(matches, date) in groupedMatches" :key="date" class="date-group">
           <div class="date-header-wrapper">
