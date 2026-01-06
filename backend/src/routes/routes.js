@@ -8,6 +8,7 @@ const router = express.Router();
 
 // PLAYERS
 router.get('/', playerController.listPlayers);
+router.get('/players', playerController.listPlayers);
 router.get('/players/:id', playerController.readPlayer);
 router.put('/players/:id', playerController.updatePlayer);
 router.delete('/players/:id', playerController.deletePlayer);
@@ -15,7 +16,7 @@ router.delete('/players/:id', playerController.deletePlayer);
 // TEAMS
 router.get('/teams', teamController.listTeams);
 router.get('/teams/:id', teamController.readTeam);
-router.get('/teams/:teamName/players', playerController.listPlayersByTeam);
+router.get('/teams/:teamId/players', playerController.listPlayersByTeam);
 
 // MATCHES
 router.post('/matches', matchController.createMatch);

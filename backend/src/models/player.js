@@ -9,7 +9,12 @@ const PlayerSchema = new mongoose.Schema({
   playerId: { type: Number, required: true, unique: true },
   nome: { type: String, required: true },
   cognome: { type: String, required: true },
-  ruolo: String,
+  ruolo: { 
+    type: String, 
+    enum: ["Portiere", "Difensore", "Centrocampista", "Attaccante", "Sconosciuto"],
+    default: "Sconosciuto"
+  },
+  foto: String,
   nazionalita: String,
   dataNascita: Date,
   altezzaCm: Number,

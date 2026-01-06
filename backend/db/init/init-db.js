@@ -125,6 +125,24 @@ async function playInitialMatches(nGiornate) {
 }
 
 /**
+ * Normalizza il ruolo dal JSON all'Enum del DB
+ */
+function mapRuolo(ruoloJson, playerInfo) {
+  if (!ruoloJson || ruoloJson === "N/D") return "Sconosciuto";
+
+  const r = ruoloJson.toLowerCase();
+
+  if (r.includes("portiere")) return "Portiere";
+  if (r.includes("difensore")) return "Difensore";
+  if (r.includes("centrocampista")) return "Centrocampista";
+  if (r.includes("attaccante")) return "Attaccante";
+
+  // Se arriva qui, il ruolo è presente ma non mappato (es. "Allenatore" o errori)
+  console.warn(`[WARN] Ruolo non riconosciuto per ${playerInfo}: "${ruoloJson}". Impostato come Sconosciuto.`);
+  return "Sconosciuto";
+}
+
+/**
  * Aggiorna le statistiche della classifica per le due squadre
  */
 async function updateStanding(season, idCasa, idTrasferta, goalsC, goalsT) {
@@ -355,17 +373,20 @@ async function init() {
 
     await Player.insertMany(
       players.map(p => {
-        // Cerco il team nel DB per associare l'ID corretto
         const matchTeam = teamsDb.find(t => t.nome.toLowerCase() === p.squadra.toLowerCase());
+        const playerName = `${p.nome} ${p.cognome}`;
+
         return {
           playerId: p.idEsterno || p.id,
           nome: safeName(p.nome),
           cognome: safeSurname(p.cognome),
-          ruolo: p.ruolo,
-          nazionalita: p.nazionalita,
+          // mapping del ruolo con logging
+          ruolo: mapRuolo(p.ruolo, playerName),
+          nazionalita: p.nazionalita === "N/D" ? "Sconosciuta" : p.nazionalita,
           dataNascita: safeBirthDate(p.dataNascita),
           altezzaCm: parseOrRandom(p.altezza, 160, 205),
           pesoKg: parseOrRandom(p.peso, 60, 100),
+          foto: p.foto || null, // Importo la foto dal JSON
           currentTeam: { 
               teamId: matchTeam ? matchTeam.teamId : null, 
               nome: p.squadra 

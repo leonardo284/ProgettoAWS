@@ -28,9 +28,11 @@ exports.readPlayer = (req, res) => {
  * Recupera tutti i giocatori di una squadra
  */
 exports.listPlayersByTeam = (req, res) => {
-  Player.find({ 'currentTeam.nome': req.params.teamName })
+  const teamId = Number(req.params.teamId); // Converto il parametro in numero
+
+  Player.find({ 'currentTeam.teamId': teamId })
     .then(players => res.json(players))
-    .catch(err => res.status(500).send(err));
+    .catch(err => res.status(500).json({ error: "Errore nel recupero dei giocatori", details: err }));
 };
 
 /**
