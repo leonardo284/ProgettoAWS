@@ -37,11 +37,17 @@ const router = createRouter({
       component: () => import('@/pages/MatchDetailPage.vue')
     },
     {
-    path: '/calendario',
-    name: 'Calendar',
-    component: CalendarPage,
-    meta: { title: 'Calendario e Risultati - Campionato 2025/2026' }
-  },
+      path: '/calendario',
+      name: 'Calendar',
+      component: CalendarPage,
+      meta: { title: 'Calendario e Risultati - Campionato 2025/2026' }
+    },
+    {
+      path: '/player/:id',
+      name: 'PlayerDetail',
+      component: () => import('@/pages/PlayerDetailPage.vue'),
+      meta: { title: 'Dettaglio Giocatore' }
+    },
 
 
   ]
