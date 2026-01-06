@@ -26,10 +26,36 @@ export async function deleteMatch(id) {
 }
 
 // BY TEAM
-export async function getMatchesByTeam(teamId) {
-  const res = await api.get(`/matches/squadra/${teamId}`)
-  return res.data
-}
+// Recupera ogni match di una singola squadra tramite il suo id
+export const getMatchesByTeamId = async (teamId) => {
+  try {
+    // 1. Recupera in parallelo i match della squadra e la lista completa dei team
+    const [resMatches, teams] = await Promise.all([
+      api.get(`/matches/squadra/${teamId}`),
+      getTeams()
+    ]);
+
+    const matches = resMatches.data;
+
+    // 2. Inserisce il logo di ogni squadra dentro l'oggetto match
+    return matches.map(match => {
+      const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId);
+      const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId);
+
+      return {
+        ...match,
+        squadre: {
+          casa: { ...match.squadre.casa, logo: teamCasa?.logo },
+          trasferta: { ...match.squadre.trasferta, logo: teamTrasferta?.logo }
+        }
+      };
+    });
+  } catch (error) {
+    console.error("Errore recupero match e loghi:", error);
+    throw error;
+  }
+};
+
 
 // Ultime N partite
 export async function getLastMatches(limit = 10) {
