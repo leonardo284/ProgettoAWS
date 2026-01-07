@@ -357,7 +357,8 @@ async function init() {
         stadio: t.stadio,
         colori: t.colori,
         logo: t.logo,
-        social: t.social
+        social: t.social,      
+        allenatore: t.allenatore,
       }))
     );
 

@@ -14,7 +14,8 @@ const TeamSchema = new mongoose.Schema({
   colori: [String],
   logo: String,
   social: Object,
-  createdAt: { type: Date, default: Date.now }
+  allenatore: String,
+  createdAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Team", TeamSchema);
