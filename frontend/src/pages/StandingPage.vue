@@ -14,10 +14,11 @@ onMounted(async () => {
     getTeams()
   ])
 
-  standings.value = standingsData.map(row => {
+  standings.value = standingsData.map((row, index) => { 
     const teamInfo = teamsData.find(t => t.teamId === row.teamId)
     return {
       ...row,
+      realPosition: index + 1, 
       logo: teamInfo?.logo || '', 
       nome: teamInfo?.nome || row.nome 
     }

@@ -36,13 +36,12 @@ const socialPlatforms = computed(() => {
         
         <div class="text-info">
           <span class="foundation">
-            {{ team.fondazione || '----' }} | {{ team.stadio?.nome || 'Stadio' }}
+            {{ team.stadio?.nome || 'Stadio' }}
           </span>
           <h1>{{ team.nome }}</h1>
           
           <div class="coach-section">
-            <p class="label">Allenatore</p>
-            <p class="name">{{ team.allenatore || 'Non assegnato' }}</p>
+            <p class="label">Allenatore: {{ team.allenatore || 'Non assegnato' }}</p>
           </div>
 
           <div class="social-icons">
