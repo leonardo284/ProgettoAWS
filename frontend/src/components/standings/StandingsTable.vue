@@ -34,12 +34,12 @@ const props = defineProps({
       </thead>
       <tbody>
         <StandingsRow
-          v-for="(row, index) in standings"
-          :key="row.teamId || index"
-          :class="{ 'highlighted-row': row.teamId === highlightTeamId }"
-          :row="row"
-          :position="row.realPosition"  
-        />
+            v-for="(row, index) in standings"
+            :key="row.teamId || index"
+            :class="{ 'highlighted-row': row.teamId === highlightTeamId }"
+            :row="row"
+            :position="row.realPosition || (index + 1)"  
+          />
       </tbody>
     </table>
   </div>
