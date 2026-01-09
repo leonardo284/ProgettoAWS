@@ -22,6 +22,11 @@ const router = createRouter({
       component: () => import('@/pages/TeamsPage.vue')
     },
     {
+      path: '/statistiche',
+      name: 'GlobalStats',
+      component: () => import('@/pages/StatsPage.vue') 
+    },
+    {
     path: '/club/:id',
       component: () => import('@/pages/TeamDetailPage.vue'),
       children: [
