@@ -356,7 +356,8 @@ async function init() {
         league: t.league,
         stadio: t.stadio,
         colori: t.colori,
-        logo: t.logo,
+        logo: t.badge,
+        banner: t.banner,
         social: t.social,      
         allenatore: t.allenatore,
       }))
