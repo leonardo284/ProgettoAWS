@@ -13,6 +13,7 @@ const TeamSchema = new mongoose.Schema({
   stadio: StadiumSchema,
   colori: [String],
   logo: String,
+  banner: String,
   social: Object,
   allenatore: String,
   createdAt: { type: Date, default: Date.now },

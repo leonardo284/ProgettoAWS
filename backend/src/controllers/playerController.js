@@ -13,7 +13,7 @@ exports.listPlayers = (req, res) => {
  * GET /players/:id
  */
 exports.readPlayer = (req, res) => {
-  Player.findById(req.params.id)
+  Player.findOne({ playerId: req.params.id })
     .then(player => {
       if (!player) {
         return res.status(404).send('Player not found');
@@ -50,14 +50,12 @@ exports.createPlayer = (req, res) => {
  * PUT /players/:id
  */
 exports.updatePlayer = (req, res) => {
-  Player.findByIdAndUpdate(req.params.id, req.body, {
+  Player.findOneAndUpdate({ playerId: req.params.id }, req.body, {
     new: true,
     runValidators: true
   })
     .then(player => {
-      if (!player) {
-        return res.status(404).send('Player not found');
-      }
+      if (!player) return res.status(404).send('Player not found');
       res.json(player);
     })
     .catch(err => res.status(500).send(err));
@@ -67,11 +65,9 @@ exports.updatePlayer = (req, res) => {
  * DELETE /players/:id
  */
 exports.deletePlayer = (req, res) => {
-  Player.findByIdAndDelete(req.params.id)
+  Player.findOneAndDelete({ playerId: req.params.id })
     .then(player => {
-      if (!player) {
-        return res.status(404).send('Player not found');
-      }
+      if (!player) return res.status(404).send('Player not found');
       res.json({ message: 'Player deleted' });
     })
     .catch(err => res.status(500).send(err));
