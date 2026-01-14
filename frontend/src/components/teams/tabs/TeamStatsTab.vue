@@ -4,8 +4,7 @@ import { useRoute } from 'vue-router';
 
 // Service
 import { getStandings } from '@/services/standingsService';
-import { getMatchesByTeamId } from '@/services/matchesService';
-import { getPlayersByTeamId } from '@/services/playersService';
+import { getStatsByTeamId } from '@/services/playersService'; 
 
 // Componenti
 import TeamWinStats from '@/components/stats/TeamWinStats.vue';
@@ -22,55 +21,33 @@ const loadStats = async () => {
   const teamId = Number(route.params.id);
   
   try {
-    // 1. Carico tutto in parallelo
-    const [standingsData, matches, allPlayers] = await Promise.all([
+    // 1. Chiamo i dati (Classifica e Statistiche Giocatori)
+    const [standingsData, playersStats] = await Promise.all([
       getStandings(),
-      getMatchesByTeamId(teamId),
-      getPlayersByTeamId(teamId)
+      getStatsByTeamId(teamId)
     ]);
 
     // 2. Cerco la riga della classifica
     standing.value = standingsData.find(s => Number(s.teamId) === teamId);
 
-    // 3. LOGICA DI CALCOLO MARCATORI
-    const goalMap = {};
+    console.log("Dati ricevuti dal backend:", playersStats[0]);
 
-    matches.forEach(match => {
-      // Determino se la squadra visualizzata giocava in casa o trasferta
-      const isCasa = match.squadre.casa.teamId === teamId;
-      const ruoloCercato = isCasa ? 'casa' : 'trasferta';
+    // 3. LOGICA MARCATORI
+    playersWithGoals.value = playersStats
+      .filter(p => p.stats.gol > 0) // Prendo solo chi ha segnato
+      .map(p => ({
+        id: p.playerId,
+        name: `${p.nome} ${p.cognome}`,
+        image: p.foto || null, 
+        goals: p.stats.gol
+      }))
+      .sort((a, b) => b.goals - a.goals); // Ordino dal primo al meno prolifico
 
-      // Itero sugli eventi del match
-      if (match.eventi && Array.isArray(match.eventi)) {
-        match.eventi.forEach(evento => {
-          // Controllo se è un GOAL fatto dalla squadra corrente
-          if (evento.tipo === 'GOAL' && evento.squadra === ruoloCercato) {
-            const pid = evento.playerId;
-            goalMap[pid] = (goalMap[pid] || 0) + 1;
-          }
-        });
-      }
-    });
-
-    // 4. Unisco i nomi dei giocatori ai gol calcolati
-    playersWithGoals.value = allPlayers
-      .map(p => {
-        const goalsCount = goalMap[p.playerId] || 0;
-        return {
-          id: p.playerId,
-          name: `${p.nome} ${p.cognome}`,
-          image: p.foto, 
-          goals: goalsCount
-        };
-      })
-      .filter(p => p.goals > 0)
-      .sort((a, b) => b.goals - a.goals);
-
-    } catch (error) {
-      console.error("Errore nel caricamento statistiche:", error);
-    } finally {
-      loading.value = false;
-    }
+  } catch (error) {
+    console.error("Errore nel caricamento statistiche:", error);
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(loadStats);

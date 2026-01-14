@@ -6,10 +6,24 @@ const props = defineProps({
   stats: Object
 });
 
-// LOGICA DI CENTRATURA DELLO SFONDO
+// DEFINIZIONE ICONE (SVG Semplici)
+const socialIcons = {
+  facebook: '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>',
+  twitter: '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M7 2h10c2.76 0 5 2.24 5 5v10c0 2.76-2.24 5-5 5H7c-2.76 0-5-2.24-5-5V7c0-2.76 2.24-5 5-5zm10 2H7c-1.66 0-3 1.34-3 3v10c0 1.66 1.34 3 3 3h10c1.66 0 3 1.34 3 3V7c0-1.66-1.34-3-3-3zM12 7c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5 2.24-5 5-5zm0 2c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm4.5-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'
+};
+
+// ESTRAZIONE DINAMICA SOCIAL DAL TEAM
+const socialPlatforms = computed(() => {
+  // Filtro l'oggetto social del team escludendo il sito web (che ha già il suo bottone)
+  if (!props.team.social) return {};
+  const { sito, ...platforms } = props.team.social;
+  return platforms; // Ritorna es: { instagram: 'instagram.com/inter', facebook: '...' }
+});
+
 const headerStyle = computed(() => {
   const bgImage = props.team.banner || props.team.immagineCopertina || '';
-  
   return {
     backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.8)), url('${bgImage}')`,
     backgroundPosition: 'center center',
@@ -18,9 +32,7 @@ const headerStyle = computed(() => {
     backgroundColor: props.team.colori?.[0] || '#003366'
   };
 });
-
 </script>
-
 <template>
   <header class="team-header" :style="headerStyle">
     <div class="header-content">

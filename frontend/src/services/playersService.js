@@ -24,8 +24,57 @@ export const getPlayerById = async (playerId) => {
   }
 };
 
+/**
+ * Recupera le statistiche generali (partite, minuti, gol, assist)
+ */
+export const getPlayerStats = async (playerId) => {
+  try {
+    const response = await api.get(`/stats/players/${playerId}`);
+    const data = response.data.stats;
+    return {
+      played: data.presenze,
+      minutes: data.minutiGiocati,
+      goals: data.gol,
+      assists: data.assist
+    };
+  } catch (error) {
+    console.error(`Errore nel recupero statistiche per ${playerId}:`, error);
+    // Ritorna valori a zero in caso di errore per non rompere la UI
+    return { played: 0, minutes: 0, goals: 0, assists: 0 };
+  }
+};
+
+/**
+ * Recupera i provvedimenti disciplinari (cartellini gialli e rossi)
+ */
+export const getPlayerDisciplinary = async (playerId) => {
+  try {
+    const response = await api.get(`/stats/players/${playerId}`);
+    const data = response.data.stats;
+    return {
+      yellow: data.ammonizioni,
+      red: data.espulsioni
+    };
+  } catch (error) {
+    console.error(`Errore nel recupero provvedimenti per ${playerId}:`, error);
+    return { yellow: 0, red: 0 };
+  }
+};
+
+export const getStatsByTeamId = async (teamId) => {
+  try {
+    const response = await api.get(`/stats/teams/${teamId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Errore nel recupero statistiche team ${teamId}:`, error);
+    throw error;
+  }
+};
 
 export default {
   getPlayersByTeamId,
-  getPlayerById
+  getPlayerById,
+  getPlayerStats,
+  getPlayerDisciplinary,
+  getStatsByTeamId
 };
