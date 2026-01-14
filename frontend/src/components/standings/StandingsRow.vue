@@ -1,19 +1,20 @@
 <script setup>
-import { computed } from 'vue';
+  import placeholderImg from '@/assets/players/placeholder.jpg';
+  import { computed } from 'vue';
 
-const props = defineProps({
-  row: Object,
-  position: Number
-});
+  const props = defineProps({
+    row: Object,
+    position: Number
+  });
 
 
-const diffReti = computed(() => (props.row?.goals || 0) - (props.row?.goalsConceded || 0));
+  const diffReti = computed(() => (props.row?.goals || 0) - (props.row?.goalsConceded || 0));
 
-const getBadge = (res) => {
-  if (res === 'W') return { class: 'w', txt: '✓' };
-  if (res === 'L') return { class: 'l', txt: '✕' };
-  return { class: 'd', txt: '−' };
-};
+  const getBadge = (res) => {
+    if (res === 'W') return { class: 'w', txt: '✓' };
+    if (res === 'L') return { class: 'l', txt: '✕' };
+    return { class: 'd', txt: '−' };
+  };
 </script>
 
 <template>
@@ -27,7 +28,7 @@ const getBadge = (res) => {
             v-if="row.logo" 
             :src="row.logo" 
             class="mini-logo"
-            @error="(e) => e.target.src = 'https://via.placeholder.com/30?text=?'" 
+            @error="(e) => e.target.src = placeholderImg" 
           />
         </div>
         <span class="name">{{ row.nome }}</span>
