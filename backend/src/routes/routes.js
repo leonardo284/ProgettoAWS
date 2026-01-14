@@ -4,6 +4,7 @@ const teamController = require('../controllers/teamController');
 const matchController = require('../controllers/matchController');
 const standingController = require('../controllers/standingController');
 const playerStatsController = require('../controllers/playerStatsController');
+const clubStatsController = require('../controllers/clubStatsController');
 
 const router = express.Router();
 
@@ -50,5 +51,12 @@ router.get('/stats/top-assists', playerStatsController.getTopAssists);
 
 // Recupera le statistiche di tutti i giocatori di una squadra
 router.get('/stats/teams/:teamId', playerStatsController.getTeamStats);
+
+router.get('/stats/top-yellows', playerStatsController.getTopYellows);
+
+router.get('/stats/top-reds', playerStatsController.getTopReds);
+
+// Rotta per ottenere le statistiche complete dei club
+router.get('/clubs/full', clubStatsController.getFullClubStats);
 
 module.exports = router;

@@ -13,6 +13,7 @@ const PlayerStatsSchema = new mongoose.Schema({
   cognome: String,
   foto: String,
   teamId: Number, 
+  teamNome: String,
 
   // Statistiche Aggregate
   stats: {

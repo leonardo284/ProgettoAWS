@@ -73,6 +73,7 @@ async function initializePlayerStats(players, stagione) {
     cognome: p.cognome,
     foto: p.foto,
     teamId: p.currentTeam.teamId,
+    teamNome: p.currentTeam.nome,
     stagione: stagione,
     stats: {
       presenze: 0,
