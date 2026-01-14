@@ -23,6 +23,24 @@ const RefereeRoleSchema = {
   cognome: String
 };
 
+// alcuni eventi sono associati alla squadra (come rigore ed angolo)
+// altri ad un giocatore specifico (goal, ammonizione, espulsione, fallo)
+const EventoSchema = new mongoose.Schema({
+  minuto: { type: Number, required: true },
+  tipo: { 
+    type: String, 
+    enum: ["GOAL", "AMMONIZIONE", "ESPULSIONE", "FALLO", "RIGORE", "ANGOLO", "SOSTITUZIONE"],
+    required: true 
+  },
+  squadraId: { type: Number, required: true },
+  playerId: { type: Number, default: null }, // Chi segna, chi viene ammonito, o chi ENTRA
+  
+  playerOutId: { type: Number, default: null }, // Usato solo per le SOSTITUZIONI (chi esce)
+
+  assistPlayerId: { type: Number, default: null },
+  dettaglio: { type: String, default: null } 
+}, { _id: true });
+
 const RefereesInMatchSchema = new mongoose.Schema({
   principale: RefereeRoleSchema,
   guardalinee1: RefereeRoleSchema,
@@ -81,12 +99,7 @@ const MatchSchema = new mongoose.Schema({
     trasferta: { type: Number, default: 0 }
   },
 
-  eventi: [{
-    minuto: Number,
-    tipo: String,
-    playerId: Number,
-    squadra: String
-  }],
+  eventi: [EventoSchema],
 
   createdAt: { type: Date, default: Date.now }
 });

@@ -7,7 +7,7 @@ const Player = require("../../src/models/player");
 const Referee = require("../../src/models/referee");
 const Match = require("../../src/models/match");
 const Standing = require("../../src/models/standing");
-
+const PlayerStats = require("../../src/models/playerStats");
 
 const MONGO_URI = "mongodb://localhost:27017/campionato";
 
@@ -65,53 +65,246 @@ function addDays(date, days) {
   return d;
 }
 
+async function initializePlayerStats(players, stagione) {
+  console.log("Inizializzazione tabella statistiche giocatori...");
+  const statsDocs = players.map(p => ({
+    playerId: p.playerId,
+    nome: p.nome,
+    cognome: p.cognome,
+    foto: p.foto,
+    teamId: p.currentTeam.teamId,
+    stagione: stagione,
+    stats: {
+      presenze: 0,
+      minutiGiocati: 0,
+      gol: 0,
+      assist: 0,
+      falliFatti: 0,
+      ammonizioni: 0,
+      espulsioni: 0
+    }
+  }));
+
+  await PlayerStats.insertMany(statsDocs);
+}
+
+async function updatePlayerStatsAfterMatch(match) {
+    if (!match.squadre.casa.formazione || !match.squadre.trasferta.formazione) return;
+
+    // Mappa per tenere traccia dei minuti di ogni giocatore in questa partita
+    const minutiPartita = new Map();
+
+    const elaboraSquadra = (squadra) => {
+        // I titolari partono con 90 minuti potenziali
+        squadra.formazione.titolari.forEach(p => minutiPartita.set(p.playerId, 90));
+        // Chi è in panchina parte con 0
+        squadra.formazione.panchina.forEach(p => minutiPartita.set(p.playerId, 0));
+    };
+
+    elaboraSquadra(match.squadre.casa);
+    elaboraSquadra(match.squadre.trasferta);
+
+    // Analizzo gli eventi per modificare i minuti (Sostituzioni ed Espulsioni)
+    match.eventi.forEach(evento => {
+        if (evento.tipo === "SOSTITUZIONE") {
+            // Chi esce (era tra i titolari o è entrato prima)
+            // Nota: assumo che il playerId dell'evento sia chi ENTRA
+            const titolariRimasti = match.squadre.casa.formazione.titolari.concat(match.squadre.trasferta.formazione.titolari)
+                .filter(t => minutiPartita.get(t.playerId) === 90);
+            
+            if (titolariRimasti.length > 0) {
+                const uscito = titolariRimasti[Math.floor(Math.random() * titolariRimasti.length)];
+                minutiPartita.set(uscito.playerId, evento.minuto); // Gioca solo fino al cambio
+            }
+            
+            // Chi entra gioca dal minuto del cambio fino alla fine
+            minutiPartita.set(evento.playerId, 90 - evento.minuto);
+        }
+
+        if (evento.tipo === "ESPULSIONE") {
+            // Se viene espulso, gioca solo fino a quel minuto
+            minutiPartita.set(evento.playerId, evento.minuto);
+        }
+    });
+
+    // 1. Aggiornamento Presenze e Minuti
+    for (const [pid, min] of minutiPartita) {
+        if (min > 0) {
+            await PlayerStats.updateOne(
+                { playerId: pid },
+                { $inc: { "stats.presenze": 1, "stats.minutiGiocati": min } }
+            );
+        }
+    }
+
+    // 2. Aggiornamento altri eventi (Goal, Assist, Falli, Cartellini)
+    for (const evento of match.eventi) {
+        if (!evento.playerId && evento.tipo !== "GOAL") continue;
+
+        let updateFields = {};
+        switch (evento.tipo) {
+            case "GOAL":
+                if (evento.playerId) updateFields["stats.gol"] = 1;
+                if (evento.assistPlayerId) {
+                    await PlayerStats.updateOne(
+                        { playerId: evento.assistPlayerId },
+                        { $inc: { "stats.assist": 1 } }
+                    );
+                }
+                break;
+            case "AMMONIZIONE":
+                updateFields["stats.ammonizioni"] = 1;
+                break;
+            case "ESPULSIONE":
+                updateFields["stats.espulsioni"] = 1;
+                break;
+            case "FALLO":
+                updateFields["stats.falliFatti"] = 1;
+                break;
+        }
+
+        if (Object.keys(updateFields).length > 0 && evento.playerId) {
+            await PlayerStats.updateOne({ playerId: evento.playerId }, { $inc: updateFields });
+        }
+    }
+}
 /**
- * Simula il gioco delle prime N giornate di campionato
+ * Simula il gioco delle prime N giornate di campionato con eventi dettagliati
  */
 async function playInitialMatches(nGiornate) {
-  console.log(`\n--- Simulazione prime ${nGiornate} giornate ---`);
+  console.log(`\n--- Simulazione prime ${nGiornate} giornate con eventi dettagliati ---`);
   
-  // Recupero i match delle giornate interessate
   const matches = await Match.find({ giornata: { $lte: nGiornate } }).sort({ giornata: 1 });
 
   for (const match of matches) {
-    // Risultato random: casa (0-4), trasferta (0-4)
-    const goalsC = Math.floor(Math.random() * 5);
-    const goalsT = Math.floor(Math.random() * 5);
-
-    // Recupero i giocatori usando il teamId salvato nello schema
-    const playersCasa = await Player.find({ "currentTeam.teamId": match.squadre.casa.teamId });
-    const playersTrasferta = await Player.find({ "currentTeam.teamId": match.squadre.trasferta.teamId });
-
     const eventiMatch = [];
+    const minutiOccupati = new Set();
 
-    // Generazione marcatori per la squadra di casa
-    for (let i = 0; i < goalsC; i++) {
-      if (playersCasa.length > 0) {
-        const p = playersCasa[Math.floor(Math.random() * playersCasa.length)];
+    // Helper per ottenere un minuto libero
+    const getFreeMinute = (minStart = 1, minEnd = 90) => {
+      let tentativi = 0;
+      while (tentativi < 100) {
+        const m = Math.floor(Math.random() * (minEnd - minStart + 1)) + minStart;
+        if (!minutiOccupati.has(m)) {
+          minutiOccupati.add(m);
+          return m;
+        }
+        tentativi++;
+      }
+      return null;
+    };
+
+    // Helper per generare eventi per una squadra
+    const generaEventiSquadra = async (squadraType) => {
+      const squadraData = match.squadre[squadraType];
+      const idSquadra = squadraData.teamId;
+      
+      // Recuperiamo i giocatori dal DB per avere l'anagrafica completa
+      const allPlayers = await Player.find({ "currentTeam.teamId": idSquadra });
+      
+      // Liste dinamiche per gestire le sostituzioni correttamente
+      // Usiamo gli ID degli snapshot della formazione salvata nel match
+      let inCampoIds = squadraData.formazione.titolari.map(p => p.playerId);
+      let inPanchinaIds = squadraData.formazione.panchina.map(p => p.playerId);
+
+      // 1. GOAL (0-4)
+      const nGoals = randomInt(0, 4);
+      for (let i = 0; i < nGoals; i++) {
+        const min = getFreeMinute();
+        if (!min || inCampoIds.length === 0) continue;
+        
+        const marcatoreId = inCampoIds[Math.floor(Math.random() * inCampoIds.length)];
+        let assistmanId = null;
+        if (Math.random() > 0.5 && inCampoIds.length > 1) {
+          const potenzialiAssist = inCampoIds.filter(id => id !== marcatoreId);
+          assistmanId = potenzialiAssist[Math.floor(Math.random() * potenzialiAssist.length)];
+        }
+
         eventiMatch.push({
-          minuto: Math.floor(Math.random() * 90) + 1,
+          minuto: min,
           tipo: "GOAL",
-          playerId: p.playerId,
-          squadra: "casa"
+          squadraId: idSquadra,
+          playerId: marcatoreId,
+          assistPlayerId: assistmanId,
+          dettaglio: Math.random() > 0.9 ? "Rigore" : "Azione"
         });
       }
-    }
 
-    // Generazione marcatori per la squadra in trasferta
-    for (let i = 0; i < goalsT; i++) {
-      if (playersTrasferta.length > 0) {
-        const p = playersTrasferta[Math.floor(Math.random() * playersTrasferta.length)];
-        eventiMatch.push({
-          minuto: Math.floor(Math.random() * 90) + 1,
-          tipo: "GOAL",
-          playerId: p.playerId,
-          squadra: "trasferta"
-        });
+      // 2. AMMONIZIONI (1-4)
+      const nGialli = randomInt(1, 4);
+      for (let i = 0; i < nGialli; i++) {
+        const min = getFreeMinute();
+        if (min && inCampoIds.length > 0) {
+          const pId = inCampoIds[Math.floor(Math.random() * inCampoIds.length)];
+          eventiMatch.push({ minuto: min, tipo: "AMMONIZIONE", squadraId: idSquadra, playerId: pId });
+        }
       }
-    }
 
-    // Aggiorno il match
+      // 3. SOSTITUZIONI (0-3) - Qui gestisco PLAYER IN e PLAYER OUT
+      const nSost = randomInt(0, 3);
+      for (let i = 0; i < nSost; i++) {
+        const min = getFreeMinute(30, 85);
+        if (min && inCampoIds.length > 0 && inPanchinaIds.length > 0) {
+          // Scelgo chi esce (tra quelli attualmente in campo)
+          const outIndex = Math.floor(Math.random() * inCampoIds.length);
+          const pOutId = inCampoIds.splice(outIndex, 1)[0];
+
+          // Scelgo chi entra (dalla panchina)
+          const inIndex = Math.floor(Math.random() * inPanchinaIds.length);
+          const pInId = inPanchinaIds.splice(inIndex, 1)[0];
+
+          // Aggiorno chi è in campo
+          inCampoIds.push(pInId);
+
+          eventiMatch.push({ 
+            minuto: min, 
+            tipo: "SOSTITUZIONE", 
+            squadraId: idSquadra, 
+            playerId: pInId,      // Entra
+            playerOutId: pOutId,  // Esce (fondamentale per i minuti!)
+            dettaglio: "Cambio tattico" 
+          });
+        }
+      }
+
+      // 4. ALTRI EVENTI (Falli, Angoli, Rossi)
+      // Falli
+      for (let i = 0; i < randomInt(4, 10); i++) {
+        const min = getFreeMinute();
+        if (min && inCampoIds.length > 0) {
+          const pId = inCampoIds[Math.floor(Math.random() * inCampoIds.length)];
+          eventiMatch.push({ minuto: min, tipo: "FALLO", squadraId: idSquadra, playerId: pId });
+        }
+      }
+      // Angoli
+      for (let i = 0; i < randomInt(2, 7); i++) {
+        const min = getFreeMinute();
+        if (min) eventiMatch.push({ minuto: min, tipo: "ANGOLO", squadraId: idSquadra });
+      }
+      // Espulsioni
+      if (Math.random() > 0.8) {
+        const min = getFreeMinute();
+        if (min && inCampoIds.length > 0) {
+          const pId = inCampoIds[Math.floor(Math.random() * inCampoIds.length)];
+          // Se espulso, lo tolgo dal campo
+          inCampoIds = inCampoIds.filter(id => id !== pId);
+          eventiMatch.push({ minuto: min, tipo: "ESPULSIONE", squadraId: idSquadra, playerId: pId });
+        }
+      }
+    };
+
+    // Generiamo eventi per casa e trasferta
+    await generaEventiSquadra("casa");
+    await generaEventiSquadra("trasferta");
+
+    // Ordiniamo gli eventi per minuto
+    eventiMatch.sort((a, b) => a.minuto - b.minuto);
+
+    // Calcoliamo risultato finale
+    const goalsC = eventiMatch.filter(e => e.tipo === "GOAL" && e.squadraId === match.squadre.casa.teamId).length;
+    const goalsT = eventiMatch.filter(e => e.tipo === "GOAL" && e.squadraId === match.squadre.trasferta.teamId).length;
+
+    // Aggiornamento Match
     match.risultato.casa = goalsC;
     match.risultato.trasferta = goalsT;
     match.eventi = eventiMatch;
@@ -119,7 +312,8 @@ async function playInitialMatches(nGiornate) {
     match.spettatori = Math.floor(Math.random() * 30000) + 5000;
     await match.save();
 
-    // Aggiorno la classifica
+    // Aggiornamento statistiche giocatori e classifica
+    await updatePlayerStatsAfterMatch(match);
     await updateStanding(match.stagione, match.squadre.casa.teamId, match.squadre.trasferta.teamId, goalsC, goalsT);
   }
 }
@@ -180,21 +374,21 @@ async function updateStanding(season, idCasa, idTrasferta, goalsC, goalsT) {
 }
 /**
  * Genera il calendario completo distribuendo i match su più giorni e orari
+ * Popola inoltre le formazioni (titolari 4-3-3 e panchina) per ogni squadra
  */
-async function generateMatches(teams, referees) {
+async function generateMatches(teams, refereesDb) {
   if (teams.length !== 20) {
     throw new Error("Devono esserci ESATTAMENTE 20 squadre");
   }
 
   const stagione = "2025/2026";
-  // Punto di inizio: il venerdì della prima settimana di campionato
   const baseStartDate = new Date("2025-09-05T00:00:00");
 
   let matchIdCounter = 1;
   const teamList = [...teams];
   const rounds = [];
 
-  // Algoritmo circle method per generare gli accoppiamenti
+  // 1. Algoritmo circle method per gli accoppiamenti
   for (let round = 0; round < 19; round++) {
     const matches = [];
     for (let i = 0; i < 10; i++) {
@@ -203,7 +397,6 @@ async function generateMatches(teams, referees) {
       matches.push({ home, away });
     }
     rounds.push(matches);
-
     const fixed = teamList[0];
     const rest = teamList.slice(1);
     rest.unshift(rest.pop());
@@ -212,34 +405,24 @@ async function generateMatches(teams, referees) {
 
   const allMatchesRaw = [];
 
-  // Genero i match di andata e ritorno
+  // 2. Generazione date e slot per le 38 giornate
   for (let roundIdx = 0; roundIdx < 38; roundIdx++) {
     const isRitorno = roundIdx >= 19;
     const currentRound = rounds[isRitorno ? roundIdx - 19 : roundIdx];
     
-    // Definisco gli slot orari richiesti per la giornata
-    // Giorno 0 = Sabato, Giorno 1 = Domenica, Giorno 2 = Lunedì
     const slots = [
-      { dayOffset: 1, hour: 18, min: 0 },  // Sabato 18:00 (1 partita)
-      { dayOffset: 1, hour: 21, min: 0 },  // Sabato 21:00 (1 partita)
-      { dayOffset: 2, hour: 12, min: 30 }, // Domenica 12:30 (1 partita)
-      { dayOffset: 2, hour: 15, min: 0 },  // Domenica 15:00 (3 partite)
-      { dayOffset: 2, hour: 15, min: 0 },
-      { dayOffset: 2, hour: 15, min: 0 },
-      { dayOffset: 2, hour: 18, min: 0 },  // Domenica 18:00 (1 partita)
-      { dayOffset: 2, hour: 21, min: 0 },  // Domenica 21:00 (1 partita)
-      { dayOffset: 3, hour: 21, min: 0 }   // Lunedì 21:00 (1 partita)
-      // Nota: lo slot mancante (10° match) lo assegno al sabato pomeriggio per completare
-      ,{ dayOffset: 1, hour: 15, min: 0 } 
+      { dayOffset: 1, hour: 15, min: 0 }, { dayOffset: 1, hour: 18, min: 0 },
+      { dayOffset: 1, hour: 21, min: 0 }, { dayOffset: 2, hour: 12, min: 30 },
+      { dayOffset: 2, hour: 15, min: 0 }, { dayOffset: 2, hour: 15, min: 0 },
+      { dayOffset: 2, hour: 15, min: 0 }, { dayOffset: 2, hour: 18, min: 0 },
+      { dayOffset: 2, hour: 21, min: 0 }, { dayOffset: 3, hour: 21, min: 0 }
     ];
 
-    // Mischio i match della giornata per assegnarli randomicamente agli slot
     const shuffledRoundMatches = shuffle([...currentRound]);
 
     shuffledRoundMatches.forEach((m, i) => {
       const slot = slots[i];
       const matchDate = new Date(baseStartDate);
-      // Sposto la data alla settimana corretta e aggiungo l'offset del giorno
       matchDate.setDate(baseStartDate.getDate() + (roundIdx * 7) + slot.dayOffset);
       matchDate.setHours(slot.hour, slot.min, 0, 0);
 
@@ -252,11 +435,44 @@ async function generateMatches(teams, referees) {
     });
   }
 
+  // 3. Creazione Partite con formazioni (4-3-3)
   const matchDocs = [];
-  const refereesDb = await Referee.find();
 
+  // Funzione interna per generare la formazione snapshot
+  const generateFormation = async (teamId) => {
+    const players = await Player.find({ "currentTeam.teamId": teamId });
+    
+    const filterByRole = (role) => players.filter(p => p.ruolo === role);
+
+    const titolari = [
+      ...shuffle(filterByRole("Portiere")).slice(0, 1),
+      ...shuffle(filterByRole("Difensore")).slice(0, 4),
+      ...shuffle(filterByRole("Centrocampista")).slice(0, 3),
+      ...shuffle(filterByRole("Attaccante")).slice(0, 3)
+    ];
+
+    const titolariIds = new Set(titolari.map(t => t.playerId));
+    const panchina = players.filter(p => !titolariIds.has(p.playerId));
+
+    const toSnapshot = (p) => ({
+      playerId: p.playerId,
+      nome: `${p.nome} ${p.cognome}`,
+      ruolo: p.ruolo
+    });
+
+    return {
+      titolari: titolari.map(toSnapshot),
+      panchina: panchina.map(toSnapshot)
+    };
+  };
+
+  console.log("Generazione partite e formazioni in corso...");
+  
   for (const m of allMatchesRaw) {
     const arbitriRandom = shuffle([...refereesDb]).slice(0, 4);
+    
+    const formazioneCasa = await generateFormation(m.casa.teamId);
+    const formazioneTrasferta = await generateFormation(m.trasferta.teamId);
 
     matchDocs.push({
       matchId: matchIdCounter++,
@@ -265,19 +481,31 @@ async function generateMatches(teams, referees) {
       dataOra: m.dataOra,
       stadio: m.casa.stadio,
       arbitri: {
-        principale: arbitriRandom[0],
-        guardalinee1: arbitriRandom[1],
-        guardalinee2: arbitriRandom[2],
-        quartoUomo: arbitriRandom[3]
+        principale: { refereeId: arbitriRandom[0].refereeId, nome: arbitriRandom[0].nome, cognome: arbitriRandom[0].cognome },
+        guardalinee1: { refereeId: arbitriRandom[1].refereeId, nome: arbitriRandom[1].nome, cognome: arbitriRandom[1].cognome },
+        guardalinee2: { refereeId: arbitriRandom[2].refereeId, nome: arbitriRandom[2].nome, cognome: arbitriRandom[2].cognome },
+        quartoUomo: { refereeId: arbitriRandom[3].refereeId, nome: arbitriRandom[3].nome, cognome: arbitriRandom[3].cognome }
       },
       squadre: {
-        casa: { teamId: m.casa.teamId, nome: m.casa.nome },
-        trasferta: { teamId: m.trasferta.teamId, nome: m.trasferta.nome }
-      }
+        casa: { 
+          teamId: m.casa.teamId, 
+          nome: m.casa.nome,
+          formazione: formazioneCasa
+        },
+        trasferta: { 
+          teamId: m.trasferta.teamId, 
+          nome: m.trasferta.nome,
+          formazione: formazioneTrasferta
+        }
+      },
+      risultato: { casa: 0, trasferta: 0 },
+      eventi: [],
+      stato: "NON_INIZIATA"
     });
   }
 
   await Match.insertMany(matchDocs);
+  console.log(`${matchDocs.length} match generati con successo.`);
 }
 
 async function generateStandings(teams) {
@@ -416,10 +644,12 @@ async function init() {
     console.log("Inizializzazione classifica...");
     await generateStandings(teamsDb);
 
-    console.log("Simulazione campionato...");
-    // Impostare il numero di giornare da simulare
-    await playInitialMatches(15); 
+    const stagione = "2025/2026";
+    const allPlayers = await Player.find();
+    await initializePlayerStats(allPlayers, stagione);
 
+    console.log("Simulazione campionato...");
+    await playInitialMatches(15);
 
 
     console.log("DB inizializzato con Mongoose");
