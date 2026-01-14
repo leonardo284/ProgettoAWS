@@ -3,6 +3,7 @@ const playerController = require('../controllers/playerController');
 const teamController = require('../controllers/teamController');
 const matchController = require('../controllers/matchController');
 const standingController = require('../controllers/standingController');
+const playerStatsController = require('../controllers/playerStatsController');
 
 const router = express.Router();
 
@@ -37,5 +38,17 @@ router.delete("/standings/:teamId", standingController.deleteStanding);
 router.get("/standings/top/:n", standingController.getTopN);
 router.get("/standings/bottom/:n", standingController.getBottomN);
 
+// PLAYER STATISTICS
+// Recupera le statistiche di un singolo giocatore tramite il suo ID
+router.get('/stats/players/:id', playerStatsController.getPlayerStats);
+
+// Recupera la classifica marcatori (Top N)
+router.get('/stats/top-scorers', playerStatsController.getTopScorers);
+
+// Recupera la classifica assistman (Top N)
+router.get('/stats/top-assists', playerStatsController.getTopAssists);
+
+// Recupera le statistiche di tutti i giocatori di una squadra
+router.get('/stats/teams/:teamId', playerStatsController.getTeamStats);
 
 module.exports = router;
