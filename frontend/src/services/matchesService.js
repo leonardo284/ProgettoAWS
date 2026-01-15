@@ -1,5 +1,6 @@
 import api from './api'
 import { getTeams } from './teamsService'
+import { getPlayersByTeamId } from './playersService'; 
 
 // CREATE
 export async function createMatch(data) {
@@ -8,9 +9,55 @@ export async function createMatch(data) {
 }
 
 // READ ONE
-export async function getMatchById(id) {
+/*export async function getMatchById(id) {
   const res = await api.get(`/matches/${id}`)
   return res.data
+}*/
+
+// READ ONE
+export async function getMatchById(id) {
+  const resMatch = await api.get(`/matches/${id}`);
+  const match = resMatch.data;
+
+  // Recupero loghi e liste giocatori complete delle due squadre
+  const [teams, playersCasa, playersTrasferta] = await Promise.all([
+    getTeams(),
+    getPlayersByTeamId(match.squadre.casa.teamId),
+    getPlayersByTeamId(match.squadre.trasferta.teamId)
+  ]);
+
+  const allPlayers = [...playersCasa, ...playersTrasferta];
+
+  // Funzione per aggiungere foto e ruolo esteso a ogni giocatore nella formazione
+  const enrich = (lista) => lista.map(p => {
+    const dettagli = allPlayers.find(ap => ap.playerId === p.playerId);
+    return { ...p, foto: dettagli?.foto || '', ruolo: dettagli?.ruolo || p.ruolo };
+  });
+
+  const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId);
+  const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId);
+
+  return {
+    ...match,
+    squadre: {
+      casa: { 
+        ...match.squadre.casa, 
+        logo: teamCasa?.logo,
+        formazione: {
+          titolari: enrich(match.squadre.casa.formazione.titolari),
+          panchina: enrich(match.squadre.casa.formazione.panchina)
+        }
+      },
+      trasferta: { 
+        ...match.squadre.trasferta, 
+        logo: teamTrasferta?.logo,
+        formazione: {
+          titolari: enrich(match.squadre.trasferta.formazione.titolari),
+          panchina: enrich(match.squadre.trasferta.formazione.panchina)
+        }
+      }
+    }
+  };
 }
 
 // UPDATE
@@ -138,3 +185,14 @@ export const groupMatchesByDate = (matches) => {
     return groups
   }, {})
 }
+
+export default {
+  createMatch,
+  getMatchById,
+  updateMatch,
+  deleteMatch,
+  getMatchesByTeamId,
+  getLastMatches,
+  getMatchesByGiornata,
+  groupMatchesByDate
+};

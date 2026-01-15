@@ -1,4 +1,5 @@
 const Match = require('../models/match');
+const Team = require('../models/team');
 
 /**
  * POST /matches
@@ -14,17 +15,21 @@ exports.createMatch = (req, res) => {
 
 /**
  * GET /matches/:id
- * Legge una partita
+ * Legge una partita con i dettagli delle squadre (Logo e Nome)
  */
-exports.readMatch = (req, res) => {
-  Match.findById(req.params.id)
-    .then(match => {
-      if (!match) {
-        return res.status(404).send('Match not found');
-      }
-      res.json(match);
-    })
-    .catch(err => res.status(500).send(err));
+exports.readMatch = async (req, res) => {
+  try {
+    // Cerco per il campo numerico 'matchId'
+    const match = await Match.findOne({ matchId: Number(req.params.id) }).lean();
+
+    if (!match) {
+      return res.status(404).json({ message: 'Match non trovato' });
+    }
+    res.json(match);
+  } catch (err) {
+    console.error("Errore server:", err);
+    res.status(500).json({ message: "Errore interno del server", error: err.message });
+  }
 };
 
 /**
