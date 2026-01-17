@@ -3,30 +3,23 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
-  team: {
-    type: Object,
-    required: true
-  }
+  team: { type: Object, required: true }
 })
 
 const router = useRouter()
-
-function goToTeam() {
-  router.push(`/club/${props.team.teamId}`)
-}
+const goToTeam = () => router.push(`/club/${props.team.teamId}`)
 
 const cardStyle = computed(() => {
   const color1 = props.team.colori?.[0] || '#3b2c63'
   return {
     background: `linear-gradient(180deg, ${color1} 0%, #121212 100%)`,
-    border: '4px solid rgba(255, 255, 255, 0.15)'
+    border: '3px solid rgba(255, 255, 255, 0.12)'
   }
 })
 </script>
 
 <template>
   <div class="team-card" :style="cardStyle">
-    
     <div class="team-card__row-logo">
       <img :src="team.logo" :alt="team.nome" class="logo-img" />
     </div>
@@ -35,11 +28,10 @@ const cardStyle = computed(() => {
       <div class="team-card__row-name">
         <h2>{{ team.nome }}</h2>
       </div>
-
       <div class="team-card__row-info">
         <span class="stadium">{{ team.stadio?.nome }}</span>
         <span v-if="team.stadio?.citta" class="city">
-          <span class="pin">📍</span> {{ team.stadio.citta }}
+          📍 {{ team.stadio.citta }}
         </span>
       </div>
     </div>
@@ -49,32 +41,29 @@ const cardStyle = computed(() => {
         CLUB INFO →
       </button>
     </div>
-
   </div>
 </template>
 
 <style scoped>
 .team-card {
   width: 100%;
-  height: 360px; 
-  border-radius: 24px;
+  height: 100%;
+  border-radius: 22px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   color: white;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.4);
   transition: all 0.3s ease;
   position: relative;
 }
 
 .team-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.6);
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
 .team-card__row-logo {
-  flex: 0 0 140px; /* Altezza fissa per l'area logo */
+  flex: 0 0 150px; /* Ridotto leggermente per l'altezza minore */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,68 +72,49 @@ const cardStyle = computed(() => {
 }
 
 .logo-img {
-  max-width: 100%;
-  max-height: 100px; /* Limita l'altezza effettiva dell'immagine */
+  max-width: 80%;
+  max-height: 100px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
 }
 
-/* Contenuto centrale */
 .team-card__content-overlay {
-  flex: 1; /* Occupa lo spazio rimanente spingendo il footer giù */
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 10px;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-  overflow: hidden; /* Evita che testi lunghi rompano il layout */
-}
-
-.team-card__row-name {
-  text-align: center;
-  margin-bottom: 5px;
+  padding: 15px;
 }
 
 .team-card__row-name h2 {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 900;
+  margin: 0 0 5px 0;
+  font-size: 1.4rem;
+  font-weight: 800;
   text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: center;
 }
 
 .team-card__row-info {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  flex-direction: column; /* Cambiato a column per evitare sovrapposizioni */
-  gap: 4px;
-  font-size: 0.8rem;
-  opacity: 0.85;
+  gap: 3px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  text-align: center;
 }
 
-/* RIGA 4: Footer bloccato in fondo */
 .team-card__row-footer {
-  margin-top: auto; /* Trucco flex per ancorare al fondo */
-  background: rgba(0, 0, 0, 0.4); /* Più scuro per leggibilità */
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .detail-button {
   width: 100%;
-  padding: 16px;
+  padding: 15px;
   background: transparent;
   border: none;
   color: white;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  text-transform: uppercase;
-}
-
-.detail-button:hover {
-  background: rgba(255, 255, 255, 0.15);
 }
 </style>
