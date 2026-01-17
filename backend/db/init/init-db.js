@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
+const bcrypt = require("bcrypt");
 
 const Team = require("../../src/models/team");
 const Player = require("../../src/models/player");
@@ -8,6 +9,7 @@ const Referee = require("../../src/models/referee");
 const Match = require("../../src/models/match");
 const Standing = require("../../src/models/standing");
 const PlayerStats = require("../../src/models/playerStats");
+const User = require("../../src/models/user");
 
 const MONGO_URI = "mongodb://localhost:27017/campionato";
 
@@ -169,6 +171,25 @@ async function updatePlayerStatsAfterMatch(match) {
         }
     }
 }
+
+/**
+ * Genera l'utente amministratore con password cifrata
+ */
+async function generateAdmin() {
+  console.log("Creazione utente amministratore...");
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash("admin", saltRounds);
+
+  const admin = new User({
+    username: "admin",
+    password: hashedPassword,
+    role: "administrator"
+  });
+
+  await admin.save();
+  console.log("Utente 'admin' creato con successo.");
+}
+
 /**
  * Simula il gioco delle prime N giornate di campionato con eventi dettagliati
  */
@@ -572,6 +593,8 @@ async function init() {
     console.log("DROP DATABASE (reset completo)...");
     await mongoose.connection.dropDatabase();
 
+    console.log("Generazione utente admin...");
+    await generateAdmin();
 
     console.log("Import teams...");
     const teams = JSON.parse(

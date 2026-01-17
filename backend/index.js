@@ -4,6 +4,7 @@ const cors = require('cors')
 const app = express();
 const path = require('path');
 const router = require('./src/routes/routes');
+const authRoutes = require('./src/routes/authRoutes');
 
 
 mongoose.connect('mongodb://localhost:27017/campionato');
@@ -16,7 +17,7 @@ app.use(cors())
 app.use(express.json());
 
 app.use('/', router);
-
+app.use('/auth', authRoutes);
 app.use((req, res) => {
   res.status(404).send({ url: req.originalUrl + ' not found' })
 });

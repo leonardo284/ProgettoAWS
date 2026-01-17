@@ -12,7 +12,8 @@ onMounted(async () => {
 
 const scroll = (direction) => {
   if (!scrollContainer.value) return
-  const scrollAmount = direction === 'left' ? -345 : 345
+  // Scroll di 350px (larghezza card + gap)
+  const scrollAmount = direction === 'left' ? -375 : 375
   scrollContainer.value.scrollBy({
     left: scrollAmount,
     behavior: 'smooth'
@@ -22,7 +23,7 @@ const scroll = (direction) => {
 
 <template>
   <section class="home-teams">
-    <div class="header-row">
+    <div class="header-section">
       <div class="title-group">
         <h2>CLUB</h2>
         <button class="view-all" @click="$router.push('/club')">VEDI TUTTI</button>
@@ -41,6 +42,7 @@ const scroll = (direction) => {
           :team="team"
           class="home-team-card"
         />
+        <div class="final-spacer"></div>
       </div>
 
       <button class="nav-btn right" @click="scroll('right')">
@@ -52,14 +54,16 @@ const scroll = (direction) => {
 
 <style scoped>
 .home-teams {
-  padding: 30px 0;
-  background: white;
+  padding: 40px 0;
+  background: #ffffff;
+  width: 100%;
+  overflow: hidden;
 }
 
-.header-row {
-  max-width: 1400px;
-  margin: 0 auto 20px auto;
-  padding: 0 20px;
+.header-section {
+  /* Allinea il titolo a sinistra con un padding del 5% */
+  padding: 0 5%;
+  margin-bottom: 20px;
 }
 
 .title-group {
@@ -68,8 +72,8 @@ const scroll = (direction) => {
   gap: 15px;
 }
 
-.header-row h2 {
-  font-size: 1.6rem;
+.header-section h2 {
+  font-size: 1.8rem;
   font-weight: 900;
   margin: 0;
 }
@@ -77,7 +81,7 @@ const scroll = (direction) => {
 .view-all {
   border: 1px solid #ddd;
   background: transparent;
-  padding: 5px 14px;
+  padding: 5px 15px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 800;
@@ -87,36 +91,45 @@ const scroll = (direction) => {
 .carousel-wrapper {
   position: relative;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
 }
 
 .teams-scroll-container {
   display: flex;
-  gap: 20px;
+  /* Allineamento a sinistra */
+  justify-content: flex-start; 
+  gap: 25px;
   overflow-x: auto;
-  padding: 10px 20px 30px 20px;
+  /* Padding iniziale per allineare la prima card al titolo sopra */
+  padding: 10px 5% 30px 5%; 
   scroll-behavior: smooth;
   scrollbar-width: none;
 }
 
-.teams-scroll-container::-webkit-scrollbar { display: none; }
-
-.home-team-card {
-  flex: 0 0 320px;
-  height: 360px !important; 
+.teams-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
+.home-team-card {
+  /* Dimensione fissa delle card */
+  flex: 0 0 350px; 
+  height: 420px !important;
+}
+
+.final-spacer {
+  flex: 0 0 5%; /* Stesso spazio del padding iniziale */
+}
+
+/* Pulsanti di navigazione */
 .nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: white;
   border: 1px solid #eee;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   cursor: pointer;
   z-index: 10;
   display: flex;
@@ -124,22 +137,25 @@ const scroll = (direction) => {
   justify-content: center;
 }
 
-.nav-btn.left { left: -20px; }
-.nav-btn.right { right: -20px; }
+.nav-btn.left { left: 10px; }
+.nav-btn.right { right: 10px; }
 
 .arrow-icon {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-top: 3px solid #1a1a1a;
-  border-right: 3px solid #1a1a1a;
+  border-top: 3px solid #333;
+  border-right: 3px solid #333;
 }
 
 .left .arrow-icon { transform: rotate(-135deg); margin-left: 4px; }
 .right .arrow-icon { transform: rotate(45deg); margin-right: 4px; }
 
-@media (max-width: 1450px) {
-  .nav-btn.left { left: 5px; }
-  .nav-btn.right { right: 5px; }
+/* Responsive mobile */
+@media (max-width: 768px) {
+  .home-team-card {
+    flex: 0 0 280px;
+  }
+  .nav-btn { display: none; } /* Nascondi frecce su mobile */
 }
 </style>

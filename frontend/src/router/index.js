@@ -53,7 +53,18 @@ const router = createRouter({
       component: () => import('@/pages/PlayerDetailPage.vue'),
       meta: { title: 'Dettaglio Giocatore' }
     },
-
+    {
+      path: '/login',
+      name: 'Login',
+      component: () => import('@/pages/LoginPage.vue'), 
+      meta: { title: 'Accedi - Serie A' }
+    },
+    {
+      path: '/account',
+      name: 'Account',
+      component: () => import('@/pages/AccountPage.vue'),
+      meta: { requiresAuth: true, title: 'Il mio Profilo' }
+    }
 
   ]
 })
