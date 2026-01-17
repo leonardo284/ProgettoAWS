@@ -1,4 +1,5 @@
 const Standing = require("../models/standing");
+const Match = require('../models/match'); 
 
 /**
  * GET /standings
@@ -6,16 +7,53 @@ const Standing = require("../models/standing");
  */
 exports.listStandings = async (req, res) => {
   try {
-    const { season = "2025/2026" } = req.query;
+    const { stagione = "2025/2026" } = req.query;
 
-    const standings = await Standing.find({ season })
+    const standings = await Standing.find({ season: stagione })
       .sort({ points: -1, goalDifference: -1, goals: -1 });
 
-    res.json(standings);
+    const standingsWithForm = await Promise.all(
+      standings.map(async (row) => {
+        // Converto row.teamId in Number per sicurezza
+        const tId = Number(row.teamId);
+
+        // 2. Cerco i match usando i nomi dei campi esatti del tuo schema
+        const lastMatches = await Match.find({
+          stagione: stagione, // Campo corretto: stagione
+          stato: "FINITA",    // Stato corretto
+          $or: [
+            { "squadre.casa.teamId": tId },
+            { "squadre.trasferta.teamId": tId }
+          ]
+        })
+        .sort({ dataOra: -1 }) // Ordino per dataOra 
+        .limit(5);
+
+        // 3. Calcolo del Trend (W, D, L)
+        const form = lastMatches.map(match => {
+          const isCasa = match.squadre.casa.teamId === tId;
+          const goalFatti = isCasa ? match.risultato.casa : match.risultato.trasferta;
+          const goalSubiti = isCasa ? match.risultato.trasferta : match.risultato.casa;
+
+          if (goalFatti > goalSubiti) return 'W';
+          if (goalFatti < goalSubiti) return 'L';
+          return 'D';
+        }).reverse(); // Dal più vecchio al più recente
+
+        return {
+          ...row.toObject(),
+          form: form
+        };
+      })
+    );
+
+    res.json(standingsWithForm);
   } catch (err) {
+    console.error("Errore listStandings:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 /**
  * GET /standings/:teamId

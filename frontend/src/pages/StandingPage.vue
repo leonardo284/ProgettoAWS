@@ -17,7 +17,7 @@ onMounted(async () => {
   standings.value = standingsData.map((row, index) => { 
     const teamInfo = teamsData.find(t => t.teamId === row.teamId)
     return {
-      ...row,
+      ...row, // Qui viene passato l'array 'form' calcolato dal backend
       realPosition: index + 1, 
       logo: teamInfo?.logo || '', 
       nome: teamInfo?.nome || row.nome 
