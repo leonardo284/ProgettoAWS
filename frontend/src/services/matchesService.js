@@ -186,6 +186,58 @@ export const groupMatchesByDate = (matches) => {
   }, {})
 }
 
+
+// --- LIVE ACTIONS ---
+
+/**
+ * Inizia il primo tempo (imposta stato e timestamp)
+ */
+export async function startFirstHalf(id) {
+  const res = await api.post(`/matches/${id}/start-first-half`);
+  return res.data;
+}
+
+/**
+ * Inizia il secondo tempo (resetta timestamp)
+ */
+export async function startSecondHalf(id) {
+  const res = await api.post(`/matches/${id}/start-second-half`);
+  return res.data;
+}
+
+/**
+ * Termina il tempo attuale (Intervallo o Fine Gara)
+ */
+export async function endPeriod(id) {
+  const res = await api.post(`/matches/${id}/end-period`);
+  return res.data;
+}
+
+/**
+ * Aggiunge un evento live (il minuto viene calcolato dal backend)
+ * @param {Object} eventData - { tipo, squadraId, playerId, assistPlayerId }
+ */
+export async function addLiveEvent(id, eventData) {
+  const res = await api.post(`/matches/${id}/events`, eventData);
+  return res.data;
+}
+
+/**
+ * Rimuove un evento live
+ */
+export async function deleteLiveEvent(id, eventId) {
+  const res = await api.delete(`/matches/${id}/events/${eventId}`);
+  return res.data;
+}
+
+/**
+ * Rende pubbliche le formazioni
+ */
+export async function publishFormations(id) {
+  const res = await api.patch(`/matches/${id}/publish-formations`);
+  return res.data;
+}
+
 export default {
   createMatch,
   getMatchById,
@@ -194,5 +246,11 @@ export default {
   getMatchesByTeamId,
   getLastMatches,
   getMatchesByGiornata,
-  groupMatchesByDate
+  groupMatchesByDate,
+  startFirstHalf,
+  startSecondHalf,
+  endPeriod,
+  addLiveEvent,
+  deleteLiveEvent,
+  publishFormations
 };

@@ -30,6 +30,19 @@ router.get('/matches/:id', matchController.readMatch);
 router.put('/matches/:id', matchController.updateMatch);
 router.delete('/matches/:id', matchController.deleteMatch);
 
+// MATCHES - Live Admin Actions
+// Cambia lo stato (es. da NON_INIZIATA a IN_CORSO_PRIMO_TEMPO) e salva il timestamp
+router.post('/matches/:id/start-first-half', matchController.startFirstHalf);
+router.post('/matches/:id/start-second-half', matchController.startSecondHalf);
+router.post('/matches/:id/end-period', matchController.endPeriod); // Per intervallo o fine partita
+
+// Gestione Eventi Live
+router.post('/matches/:id/events', matchController.addLiveEvent); 
+router.delete('/matches/:id/events/:eventId', matchController.deleteLiveEvent);
+
+// Gestione Pubblicazione Formazioni
+router.patch('/matches/:id/publish-formations', matchController.publishFormations);
+
 // STANDINGS
 router.get("/standings", standingController.listStandings);
 router.get("/standings/:teamId", standingController.readStanding);

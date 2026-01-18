@@ -522,7 +522,10 @@ async function generateMatches(teams, refereesDb) {
       },
       risultato: { casa: 0, trasferta: 0 },
       eventi: [],
-      stato: "NON_INIZIATA"
+      stato: "NON_INIZIATA",
+      formazioniPubblicate: true,
+      inizioPrimoTempo: null,
+      inizioSecondoTempo: null
     });
   }
 

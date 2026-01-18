@@ -77,15 +77,27 @@ const MatchSchema = new mongoose.Schema({
     type: String,
     enum: [
       "NON_INIZIATA",
-      "IN_CORSO",
+      "IN_CORSO_PRIMO_TEMPO",
       "FINE_PRIMO_TEMPO",
-      "FINE_SECONDO_TEMPO",
+      "IN_CORSO_SECONDO_TEMPO",
       "FINITA",
       "SOSPESA",
       "ANNULLATA"
     ],
     default: "NON_INIZIATA"
   },
+  
+  // Indica se l'admin ha reso note le formazioni
+  formazioniPubblicate: {
+    type: Boolean,
+    default: false
+  },
+
+  // Timestamp di quando inizia il primo tempo ed il secondo tempo
+  // Serve per calcolare il minuto di gioco matematicamente
+  inizioPrimoTempo: { type: Date, default: null },
+
+  inizioSecondoTempo: { type: Date, default: null },
 
   arbitri: RefereesInMatchSchema,
 
