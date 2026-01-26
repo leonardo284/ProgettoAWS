@@ -16,10 +16,8 @@ const formatDate = (dateTimeStr) => {
 </script>
 
 <template>
-  <router-link 
-    :to="{ name: 'MatchDetail', params: { id: match.matchId } }" 
-    class="match-link"
-  >
+  <router-link :to="{ name: 'MatchDetail', params: { id: match.matchId } }" class="match-link">
+
     <div class="match-card">
       <div class="match-header">
         <span class="header-text">

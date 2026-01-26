@@ -64,22 +64,38 @@ onMounted(() => {
   // Inizializzazione Socket.io
   socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
 
-  // Ascolta gli aggiornamenti di stato (Push Real-time)
+  // Gestione dei cambi di STATO (Inizio/Fine tempi)
   socket.on('matchStatusUpdate', (updatedData) => {
-    // Verifico che l'aggiornamento riguardi questa partita
     if (match.value && updatedData.matchId === match.value.matchId) {
-      console.log("Push ricevuto: Match iniziato/aggiornato", updatedData.stato);
+      console.log("Push ricevuto: Cambio stato in", updatedData.stato);
       
-      // Aggiorno i dati locali con quelli ricevuti dal push
+      // Aggiorno i dati core
       match.value.stato = updatedData.stato;
-      if (updatedData.inizioPrimoTempo) match.value.inizioPrimoTempo = updatedData.inizioPrimoTempo;
-      if (updatedData.inizioSecondoTempo) match.value.inizioSecondoTempo = updatedData.inizioSecondoTempo;
+
+      // Aggiorno i timestamp se presenti (fondamentale per il cronometro)
+      if (updatedData.inizioPrimoTempo) {
+        match.value.inizioPrimoTempo = updatedData.inizioPrimoTempo;
+      }
+      if (updatedData.inizioSecondoTempo) {
+        match.value.inizioSecondoTempo = updatedData.inizioSecondoTempo;
+      }
       
-      // Calcolo immediato del minuto per evitare "salti" visivi
+      // Ricalcolo immediato del minuto per sincronizzare la grafica
       match.value.minutoCorrente = calculateLiveMinute(match.value);
     }
   });
 
+  // Gestione degli eventi (Goal, Cartellini, ecc.)
+  socket.on('matchUpdate', (data) => {
+    if (match.value && data.matchId === match.value.matchId) {
+      console.log("Push ricevuto: Nuovo evento di tipo", data.nuovoEvento.tipo);
+      
+      // Aggiorna punteggio e aggiunge l'evento alla lista
+      match.value.risultato = data.risultato;
+      if (!match.value.eventi) match.value.eventi = [];
+      match.value.eventi.push(data.nuovoEvento);
+    }
+  });
   // Timer interval per l'aggiornamento fluido del cronometro
   timerInterval = setInterval(() => {
     if (match.value && match.value.stato.startsWith('IN_CORSO')) {

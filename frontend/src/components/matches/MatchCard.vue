@@ -1,16 +1,16 @@
 <script setup>
-import { formatTime, formatShortDate } from '@/services/utilityService';
+  import { formatTime, formatShortDate } from '@/services/utilityService';
 
-// Definizione delle props riceve l'oggetto match dal database
-defineProps({
-  match: {
-    type: Object,
-    required: true
-  }
-});
+  // Definizione delle props, riceve l'oggetto match dal database
+  defineProps({
+    match: {
+      type: Object,
+      required: true
+    }
+  });
 
-// Evento per gestire il click sulla card e navigare al dettaglio
-defineEmits(['click']);
+  // Evento per gestire il click sulla card e navigare al dettaglio
+  defineEmits(['click']);
 </script>
 
 <template>

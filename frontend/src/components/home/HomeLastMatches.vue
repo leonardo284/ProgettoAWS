@@ -1,15 +1,15 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getLastMatches } from '@/services/matchesService'
-import MatchCard from '@/components/matches/MatchCardHome.vue'
+  import { ref, onMounted } from 'vue'
+  import { getLastMatches } from '@/services/matchesService'
+  import MatchCard from '@/components/matches/MatchCardHome.vue'
 
-const matches = ref([])
+  const matches = ref([])
 
-onMounted(async () => {
-  const data = await getLastMatches()
-  // Raddoppio l'array per creare l'effetto loop infinito senza interruzioni
-  matches.value = [...data, ...data]
-})
+  onMounted(async () => {
+    const data = await getLastMatches()
+    // Raddoppio l'array per creare l'effetto loop infinito senza interruzioni
+    matches.value = [...data, ...data]
+  })
 </script>
 
 <template>
@@ -32,7 +32,7 @@ onMounted(async () => {
 .last-matches-section {
   padding: 20px 0;
   background-color: #f8f9fa;
-  overflow: hidden; /* Fondamentale per non mostrare lo scroll */
+  overflow: hidden; 
   border-bottom: 1px solid #ddd;
 }
 
@@ -64,7 +64,7 @@ onMounted(async () => {
     transform: translateX(0);
   }
   100% {
-    /* Si sposta esattamente della metà (perché abbiamo raddoppiato l'array) */
+    /* Si sposta esattamente della metà */
     transform: translateX(-50%);
   }
 }
