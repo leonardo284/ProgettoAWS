@@ -34,7 +34,6 @@ const EventoSchema = new mongoose.Schema({
   },
   squadraId: { type: Number, required: true },
   playerId: { type: Number, default: null }, // Chi segna, chi viene ammonito, o chi ENTRA
-  
   playerOutId: { type: Number, default: null }, // Usato solo per le SOSTITUZIONI (chi esce)
 
   assistPlayerId: { type: Number, default: null },

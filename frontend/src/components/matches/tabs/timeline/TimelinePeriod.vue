@@ -10,7 +10,7 @@ const props = defineProps({
 const label = computed(() => {
   switch (props.event.tipo) {
     case 'INIZIO_PARTITA': return "CALCIO D'INIZIO";
-    case 'INTERVALLO': return "INTERVALLO";
+    case 'INTERVALLO': return "FINE PRIMO TEMPO";
     case 'FINE_PARTITA': return "FINE PARTITA";
     default: return "";
   }

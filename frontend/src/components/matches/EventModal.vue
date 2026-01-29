@@ -1,58 +1,76 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import matchesService from '@/services/matchesService'; // Importiamo il servizio
+  import { ref, computed, watch } from 'vue';
+  import matchesService from '@/services/matchesService';
 
-const props = defineProps({
-  isOpen: Boolean,
-  match: Object
-});
+  const props = defineProps({
+    isOpen: Boolean,
+    match: Object
+  });
 
-const emit = defineEmits(['close', 'refreshMatch']); // Cambiato 'save' in 'refreshMatch'
+  const emit = defineEmits(['close', 'refreshMatch']);
 
-const selectedTeamId = ref(null);
-const selectedPlayerId = ref('');
-const selectedType = ref(null);
-const minute = ref(props.match?.minutoCorrente || 0);
+  const selectedTeamId = ref(null);
+  const selectedType = ref(null);
+  const selectedPlayerId = ref('');
+  const outPlayerId = ref('');      
+  const inPlayerId = ref('');       
+  const minute = ref(0);
 
-const eventTypes = ["GOAL", "AMMONIZIONE", "ESPULSIONE", "FALLO", "RIGORE", "ANGOLO", "SOSTITUZIONE"];
+  const eventTypes = ["GOAL", "AMMONIZIONE", "ESPULSIONE", "RIGORE", "ANGOLO", "SOSTITUZIONE", "FALLO"];
 
-const homeTeam = computed(() => props.match?.squadre?.casa);
-const awayTeam = computed(() => props.match?.squadre?.trasferta);
+  watch(() => props.isOpen, (newVal) => {
+    if (newVal) {
+      minute.value = props.match?.minutoCorrente || 0;
+      resetForm();
+    }
+  });
 
-const filteredPlayers = computed(() => {
-  let team = null;
-  if (selectedTeamId.value === homeTeam.value?.teamId) team = homeTeam.value;
-  else if (selectedTeamId.value === awayTeam.value?.teamId) team = awayTeam.value;
-  if (!team || !team.formazione) return [];
-  return [...(team.formazione.titolari || []), ...(team.formazione.panchina || [])];
-});
+  const homeTeam = computed(() => props.match?.squadre?.casa);
+  const awayTeam = computed(() => props.match?.squadre?.trasferta);
+  const selectedTeam = computed(() => 
+    selectedTeamId.value === homeTeam.value?.teamId ? homeTeam.value : awayTeam.value
+  );
 
-const isValid = computed(() => selectedTeamId.value && selectedPlayerId.value && selectedType.value);
+  const starters = computed(() => selectedTeam.value?.formazione?.titolari || []);
+  const bench = computed(() => selectedTeam.value?.formazione?.panchina || []);
 
-// FUNZIONE DI REGISTRAZIONE REALE
-const handleRegisterEvent = async () => {
-  try {
-    const payload = {
-      squadraId: selectedTeamId.value,
-      playerId: selectedPlayerId.value,
-      tipo: selectedType.value,
-      minuto: minute.value
-    };
+  const isValid = computed(() => {
+    if (!selectedTeamId.value || !selectedType.value) return false;
+    if (['ANGOLO', 'RIGORE', 'FALLO'].includes(selectedType.value)) return true;
+    if (selectedType.value === 'SOSTITUZIONE') return outPlayerId.value && inPlayerId.value;
+    return selectedPlayerId.value !== '';
+  });
 
-    // Chiamata al backend tramite il servizio che hai già in matchesService.js
-    await matchesService.addLiveEvent(props.match.matchId, payload);
-    
-    emit('refreshMatch'); // Dice a MatchDetailPage di ricaricare i dati
-    emit('close');        // Chiude la modale
-    
-    // Reset form per il prossimo evento
+  const resetForm = () => {
+    selectedTeamId.value = null;
     selectedType.value = null;
     selectedPlayerId.value = '';
-  } catch (err) {
-    console.error("Errore salvataggio evento:", err);
-    alert("Errore durante il salvataggio dell'evento");
-  }
-};
+    outPlayerId.value = '';
+    inPlayerId.value = '';
+  };
+
+  const handleRegisterEvent = async () => {
+    try {
+      const payload = {
+        squadraId: selectedTeamId.value,
+        tipo: selectedType.value,
+        minuto: minute.value,
+      };
+
+      if (selectedType.value === 'SOSTITUZIONE') {
+        payload.playerId = inPlayerId.value; 
+        payload.playerOutId = outPlayerId.value;
+      } else if (!['ANGOLO', 'RIGORE', 'FALLO'].includes(selectedType.value)) {
+        payload.playerId = selectedPlayerId.value;
+      }
+
+      await matchesService.addLiveEvent(props.match.matchId, payload);
+      emit('refreshMatch');
+      emit('close');
+    } catch (err) {
+      console.error("Errore salvataggio evento:", err);
+    }
+  };
 </script>
 
 <template>
@@ -68,41 +86,21 @@ const handleRegisterEvent = async () => {
           <label>Squadra</label>
           <div class="team-selector">
             <button 
-              v-if="homeTeam"
-              type="button"
-              :class="['team-btn', { active: selectedTeamId === homeTeam.teamId }]"
-              @click="selectedTeamId = homeTeam.teamId"
+              v-for="team in [homeTeam, awayTeam]" 
+              :key="team?.teamId"
+              :class="['team-btn', { active: selectedTeamId === team?.teamId }]"
+              @click="selectedTeamId = team?.teamId"
             >
-              {{ homeTeam.nome }}
-            </button>
-            <button 
-              v-if="awayTeam"
-              type="button"
-              :class="['team-btn', { active: selectedTeamId === awayTeam.teamId }]"
-              @click="selectedTeamId = awayTeam.teamId"
-            >
-              {{ awayTeam.nome }}
+              {{ team?.nome }}
             </button>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>Giocatore</label>
-          <select v-model="selectedPlayerId" class="select-input" :disabled="!selectedTeamId">
-            <option value="" disabled>-- Seleziona Giocatore --</option>
-            <option v-for="player in filteredPlayers" :key="player.playerId" :value="player.playerId">
-              {{ player.nome }} ({{ player.ruolo }})
-            </option>
-          </select>
         </div>
 
         <div class="form-group">
           <label>Tipo di Evento</label>
           <div class="event-grid">
             <button 
-              v-for="type in eventTypes" 
-              :key="type"
-              type="button"
+              v-for="type in eventTypes" :key="type"
               :class="['event-btn', { selected: selectedType === type }]"
               @click="selectedType = type"
             >
@@ -111,19 +109,42 @@ const handleRegisterEvent = async () => {
           </div>
         </div>
 
+        <div v-if="selectedType === 'SOSTITUZIONE' && selectedTeamId" class="sub-container">
+          <div class="form-group">
+            <label>Esce</label>
+            <select v-model="outPlayerId" class="select-input">
+              <option value="" disabled>-- Seleziona --</option>
+              <option v-for="p in starters" :key="p.playerId" :value="p.playerId">{{ p.nome }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Entra</label>
+            <select v-model="inPlayerId" class="select-input">
+              <option value="" disabled>-- Seleziona --</option>
+              <option v-for="p in bench" :key="p.playerId" :value="p.playerId">{{ p.nome }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div v-else-if="selectedType && !['RIGORE', 'ANGOLO', 'FALLO'].includes(selectedType)" class="form-group">
+          <label>Giocatore</label>
+          <select v-model="selectedPlayerId" class="select-input" :disabled="!selectedTeamId">
+            <option value="" disabled>-- Seleziona Giocatore --</option>
+            <option v-for="p in starters" :key="p.playerId" :value="p.playerId">
+              {{ p.nome }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-group">
-          <label>Minuto</label>
+          <label>Minuto Effettivo</label>
           <input type="number" v-model="minute" class="minute-input" />
         </div>
       </div>
 
       <div class="modal-footer">
         <button @click="$emit('close')" class="btn-secondary">Annulla</button>
-        <button 
-          @click="handleRegisterEvent" 
-          class="btn-primary" 
-          :disabled="!isValid"
-        >
+        <button @click="handleRegisterEvent" class="btn-primary" :disabled="!isValid">
           Registra Evento
         </button>
       </div>
@@ -132,34 +153,35 @@ const handleRegisterEvent = async () => {
 </template>
 
 <style scoped>
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.85); display: flex; justify-content: center;
-  align-items: center; z-index: 9999;
-}
-.modal-content {
-  background: white; padding: 25px; border-radius: 12px;
-  width: 90%; max-width: 450px; color: #333;
-}
-.team-selector { display: flex; gap: 10px; margin-top: 5px; }
-.team-btn {
-  flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 8px;
-  background: #f8f9fa; cursor: pointer; font-weight: bold;
-}
-.team-btn.active { border-color: #003366; background: #003366; color: white; }
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: flex; justify-content: center;
+    align-items: center; z-index: 9999;
+  }
+  .modal-content {
+    background: white; padding: 25px; border-radius: 16px;
+    width: 90%; max-width: 420px;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .modal-header h3 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+  .close-btn { background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; }
 
-.form-group { margin-top: 15px; }
-label { display: block; font-size: 12px; font-weight: bold; color: #666; }
-.select-input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; }
+  .form-group { margin-bottom: 15px; }
+  label { display: block; font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
 
-.event-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
-.event-btn { padding: 10px 5px; border: 1px solid #ddd; border-radius: 6px; background: white; font-size: 10px; font-weight: bold; cursor: pointer; }
-.event-btn.selected { background: #e21e1e; color: white; border-color: #e21e1e; }
+  .team-selector { display: flex; gap: 10px; }
+  .team-btn { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .team-btn.active { background: #1e293b; color: white; border-color: #1e293b; }
 
-.minute-input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; }
-.modal-footer { margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px; }
-.btn-primary { background: #003366; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-secondary { background: #eee; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
-.close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
+  .event-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .event-btn { padding: 10px 5px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
+  .event-btn.selected { background: #ef4444; color: white; border-color: #ef4444; }
+
+  .sub-container { background: #f1f5f9; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
+  .select-input, .minute-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
+
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .btn-primary { background: #003366; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  .btn-primary:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-secondary { background: #f1f5f9; border: none; padding: 12px 15px; border-radius: 8px; color: #475569; font-weight: 600; cursor: pointer; }
 </style>
