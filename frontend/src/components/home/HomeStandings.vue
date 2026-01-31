@@ -7,21 +7,19 @@ import { getTeams } from '@/services/teamsService'
 const standings = ref([])
 
 onMounted(async () => {
-  // 1. Recupero dati in parallelo per velocizzare il caricamento
   const [standingsData, teamsData] = await Promise.all([
     getStandings(),
     getTeams()
   ])
 
   standings.value = standingsData.map(row => {
-    // Cerco i dati del club per recuperare il logo URL
     const teamInfo = teamsData.find(t => 
       t.teamId === row.teamId || 
       t.nome.trim().toLowerCase() === (row.squadra || row.nome || "").trim().toLowerCase()
     )
     
     return {
-      ...row, // Mantiene PG, V, N, P, PT, ecc.
+      ...row,
       logo: teamInfo?.logo || '', 
       squadra: row.squadra || teamInfo?.nome || row.nome 
     }
@@ -33,7 +31,6 @@ onMounted(async () => {
   <section class="home-standings">
     <div class="standings-card">
       <div class="blue-header">
-        <div class="fake-logo">A</div>
         <h3>CLASSIFICA</h3>
         <button class="arrow-btn" @click="$router.push('/classifica')">→</button>
       </div>
@@ -57,25 +54,18 @@ onMounted(async () => {
 }
 
 .blue-header {
-  background: #0084f4;
+  background: #003366; 
   color: white;
   padding: 12px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 12px; 
 }
 
-.fake-logo {
-  width: 24px;
-  height: 24px;
-  background: white;
-  color: #0084f4;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 14px;
+h3 {
+  margin: 0;
+  font-weight: bold;
+  letter-spacing: 1px;
 }
 
 .arrow-btn {
@@ -88,9 +78,17 @@ onMounted(async () => {
   height: 30px;
   cursor: pointer;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.arrow-btn:hover {
+  background: rgba(255,255,255,0.4);
 }
 
 .table-dark-bg {
-  background-color: #121212;
+  background-color: #ffffff; 
 }
 </style>

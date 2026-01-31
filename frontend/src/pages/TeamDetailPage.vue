@@ -6,6 +6,7 @@ import { getStandings } from '@/services/standingsService';
 import TeamHeader from '@/components/teams/TeamHeader.vue'
 import TeamTabNav from '@/components/teams/TeamTabNav.vue'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
 
 const route = useRoute()
 const team = ref(null)
@@ -45,6 +46,8 @@ onMounted(async () => {
     <main class="tab-viewport">
       <router-view :team="team" />
     </main>
+
+    <AppFooter />
   </div>
 </template>
 
