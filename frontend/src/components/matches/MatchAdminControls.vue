@@ -1,58 +1,62 @@
 <script setup>
-import { computed } from 'vue';
-import matchesService from '@/services/matchesService';
+  import { computed } from 'vue';
+  import matchesService from '@/services/matchesService';
 
-const props = defineProps({
-  match: { type: Object, required: true }
-});
+  const props = defineProps({
+    match: { type: Object, required: true }
+  });
 
-const emit = defineEmits(['refreshMatch', 'openEventPopup']);
+  const emit = defineEmits(['refreshMatch', 'openEventPopup']);
 
-const canStartFirstHalf = computed(() => props.match.stato === 'NON_INIZIATA');
-const canStartSecondHalf = computed(() => props.match.stato === 'FINE_PRIMO_TEMPO');
-const canEndPeriod = computed(() => 
-  props.match.stato === 'IN_CORSO_PRIMO_TEMPO' || props.match.stato === 'IN_CORSO_SECONDO_TEMPO'
-);
-const canAddEvent = computed(() => 
-  props.match.stato === 'IN_CORSO_PRIMO_TEMPO' || props.match.stato === 'IN_CORSO_SECONDO_TEMPO'
-);
+  const canStartFirstHalf = computed(() => props.match.stato === 'NON_INIZIATA');
+  const canStartSecondHalf = computed(() => props.match.stato === 'FINE_PRIMO_TEMPO');
+  const canEndPeriod = computed(() => 
+    props.match.stato === 'IN_CORSO_PRIMO_TEMPO' || props.match.stato === 'IN_CORSO_SECONDO_TEMPO'
+  );
+  const canAddEvent = computed(() => 
+    props.match.stato === 'IN_CORSO_PRIMO_TEMPO' || props.match.stato === 'IN_CORSO_SECONDO_TEMPO'
+  );
 
-const handleOpenEventModal = () => {
-  emit('openEventPopup');
-};
+  const handleOpenEventModal = () => {
+    emit('openEventPopup');
+  };
 
-const handleStartFirstHalf = async () => {
-  try {
-    await matchesService.startFirstHalf(props.match.matchId);
-    emit('refreshMatch');
-  } catch (err) {
-    console.error("Errore avvio match:", err);
-  }
-};
-
-const handleStartSecondHalf = async () => {
-  try {
-    await matchesService.startSecondHalf(props.match.matchId);
-    emit('refreshMatch');
-  } catch (err) {
-    console.error("Errore avvio secondo tempo:", err);
-  }
-};
-
-const handleEndPeriod = async () => {
-  const msg = props.match.stato === 'IN_CORSO_PRIMO_TEMPO' 
-    ? "Fischiare la fine del primo tempo?" 
-    : "Fischiare la fine della partita?";
-    
-  if (confirm(msg)) {
+  const handleStartFirstHalf = async () => {
     try {
-      await matchesService.endPeriod(props.match.matchId);
+      await matchesService.startFirstHalf(props.match.matchId);
       emit('refreshMatch');
     } catch (err) {
-      console.error("Errore fine periodo:", err);
+      console.error("Errore avvio match:", err);
     }
-  }
-};
+  };
+
+  const handleStartSecondHalf = async () => {
+    try {
+      await matchesService.startSecondHalf(props.match.matchId);
+      emit('refreshMatch');
+    } catch (err) {
+      console.error("Errore avvio secondo tempo:", err);
+    }
+  };
+
+  const handleEndPeriod = async () => {
+    const isSecondHalf = props.match.stato === 'IN_CORSO_SECONDO_TEMPO';
+    const msg = !isSecondHalf 
+      ? "Fischiare la fine del primo tempo?" 
+      : "Fischiare la fine della partita?";
+      
+    if (confirm(msg)) {
+      try {
+        await matchesService.endPeriod(props.match.matchId);
+        
+        console.log("Periodo terminato con successo.");
+        emit('refreshMatch');
+      } catch (err) {
+        console.error("Errore fine periodo:", err);
+        alert("Errore nel terminare il match.");
+      }
+    }
+  };
 </script>
 
 <template>
