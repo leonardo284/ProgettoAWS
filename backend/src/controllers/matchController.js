@@ -202,7 +202,6 @@ exports.addLiveEvent = async (req, res) => {
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
 
-    // Creo l'oggetto dell'evento estraendo i campi dal body
     const { tipo, squadraId, playerId, playerOutId, minuto, dettaglio } = req.body;
 
     const nuovoEvento = { 
@@ -210,32 +209,11 @@ exports.addLiveEvent = async (req, res) => {
       squadraId: Number(squadraId),
       minuto: Math.min(minuto, 90),
       dettaglio,
-      // Se è una sostituzione, questo campo sarà popolato
       playerOutId: playerOutId ? Number(playerOutId) : null,
-      // Se è un evento standard (Goal, Fallo), usiamo playerId
       playerId: playerId ? Number(playerId) : null
     };
 
-    // --- LOGICA CAMBIO FORMAZIONE IN TEMPO REALE ---
-    if (tipo === "SOSTITUZIONE" && nuovoEvento.playerId && nuovoEvento.playerOutId) {
-      const teamKey = match.squadre.casa.teamId === nuovoEvento.squadraId ? 'casa' : 'trasferta';
-      const formazione = match.squadre[teamKey].formazione;
-
-      // Chi esce è playerOutId, chi entra è playerId
-      const indexOut = formazione.titolari.findIndex(p => p.playerId === nuovoEvento.playerOutId);
-      const indexIn = formazione.panchina.findIndex(p => p.playerId === nuovoEvento.playerId);
-
-      if (indexOut !== -1 && indexIn !== -1) {
-        const playerLeaving = formazione.titolari[indexOut];
-        const playerEntering = formazione.panchina[indexIn];
-
-        formazione.titolari.splice(indexOut, 1, playerEntering);
-        formazione.panchina.splice(indexIn, 1, playerLeaving);
-        
-        match.markModified(`squadre.${teamKey}.formazione`);
-      }
-    }
-
+    // --- LOGICA GOAL ---
     if (tipo === "GOAL") {
       if (Number(squadraId) === match.squadre.casa.teamId) match.risultato.casa++;
       else match.risultato.trasferta++;
