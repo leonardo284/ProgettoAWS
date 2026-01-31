@@ -13,47 +13,70 @@
   });
 
   // Ordine cronologico inverso (dal più recente al più vecchio)
-const sortedEvents = computed(() => {
-  if (!props.match?.eventi) return [];
+  const sortedEvents = computed(() => {
+    if (!props.match?.eventi) return [];
 
-  // 1. Eventi reali (Priorità base 1)
-  let timeline = props.match.eventi.map(ev => ({ ...ev, priority: 1 }));
+    // 1. Eventi reali (Aggiungiamo l'indice originale come backup se l'_id fallisse)
+    let timeline = props.match.eventi.map((ev, index) => ({ 
+      ...ev, 
+      priority: 1,
+      originalIndex: index // Backup per l'ordine di inserimento
+    }));
 
-  // 2. FINE PARTITA (Priorità 3 -> Sta sopra tutto al 90')
-  if (props.match.stato === 'FINITA') {
-    timeline.push({ tipo: 'FINE_PARTITA', minuto: 90, priority: 3 });
-  }
+    // ai 3 eventi fittizi che aggiungiamo noi per l'inizio partita, l'intervallo e la fine partita 
+    // assegnamo degli id statici 'a', 'y' e 'z'in modo che comparandoli con gli id degli eventi reali (che sono ObjectId di MongoDB)
+    // possiamo sempre garantire un ordinamento consistente anche in caso di eventi multipli allo stesso minuto
 
-  // 3. INTERVALLO 
-  const statiPostPrimoTempo = ['FINE_PRIMO_TEMPO', 'IN_CORSO_SECONDO_TEMPO', 'FINITA'];
-  if (statiPostPrimoTempo.includes(props.match.stato)) {
-    const risultatoIntervallo = props.match.eventi.reduce((acc, ev) => {
-      if (ev.tipo === 'GOAL' && ev.minuto <= 45) {
-        if (ev.squadraId === props.match.squadre.casa.teamId) acc.casa++;
-        else acc.trasferta++;
+
+
+    // 2. FINE PARTITA (Priorità 3)
+    if (props.match.stato === 'FINITA') {
+      timeline.push({ tipo: 'FINE_PARTITA', minuto: 90, priority: 3, _id: 'z' });
+    }
+
+    // 3. INTERVALLO (Priorità 2)
+    const statiPostPrimoTempo = ['FINE_PRIMO_TEMPO', 'IN_CORSO_SECONDO_TEMPO', 'FINITA'];
+    if (statiPostPrimoTempo.includes(props.match.stato)) {
+      const risultatoIntervallo = props.match.eventi.reduce((acc, ev) => {
+        if (ev.tipo === 'GOAL' && ev.minuto <= 45) {
+          if (ev.squadraId === props.match.squadre.casa.teamId) acc.casa++;
+          else acc.trasferta++;
+        }
+        return acc;
+      }, { casa: 0, trasferta: 0 });
+
+      timeline.push({ 
+        tipo: 'INTERVALLO', 
+        minuto: 45, 
+        priority: 2, 
+        risultatoMomento: risultatoIntervallo,
+        _id: 'y'
+      });
+    }
+
+    // 4. INIZIO PARTITA (Priorità 0)
+    if (props.match.stato !== 'NON_INIZIATA') {
+      timeline.push({ tipo: 'INIZIO_PARTITA', minuto: 0, priority: 0, _id: 'a' });
+    }
+
+    // ORDINAMENTO RAFFINATO
+    return timeline.sort((a, b) => {
+      // A. Ordina per minuto (Decrescente)
+      if (b.minuto !== a.minuto) return b.minuto - a.minuto;
+
+      // B. Ordina per priorità (Decrescente: FINE_PARTITA vince su eventi al 90')
+      if (b.priority !== a.priority) return b.priority - a.priority;
+
+      // C. Ordina per inserimento (Decrescente: l'ultimo cliccato sta sopra)
+      // Se c'è l'ID di MongoDB (stringa), usiamo localeCompare
+      if (a._id && b._id) {
+        return String(b._id).localeCompare(String(a._id));
       }
-      return acc;
-    }, { casa: 0, trasferta: 0 });
 
-    timeline.push({ 
-      tipo: 'INTERVALLO', 
-      minuto: 45, 
-      priority: 2, // PRIORITÀ ALTA per stare SOPRA gli eventi del 45'
-      risultatoMomento: risultatoIntervallo 
+      // D. Fallback: usa l'indice originale dell'array
+      return b.originalIndex - a.originalIndex;
     });
-  }
-
-  // 4. INIZIO PARTITA (Priorità 0 -> Sta sotto tutto al minuto 0)
-  if (props.match.stato !== 'NON_INIZIATA') {
-    timeline.push({ tipo: 'INIZIO_PARTITA', minuto: 0, priority: 0 });
-  }
-
-  // Ordinamento: Minuto Decrescente, poi Priorità Decrescente
-  return timeline.sort((a, b) => {
-    if (b.minuto !== a.minuto) return b.minuto - a.minuto;
-    return b.priority - a.priority;
   });
-});
 </script>
 
 <template>
