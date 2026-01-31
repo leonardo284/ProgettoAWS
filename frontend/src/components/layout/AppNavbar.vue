@@ -24,6 +24,7 @@ const handleAccountClick = () => {
       <RouterLink to="/calendario">Calendario</RouterLink>
       <RouterLink to="/classifica">Classifica</RouterLink>
       <RouterLink to="/club">Club</RouterLink>
+      <RouterLink to="/statistiche">Statistiche</RouterLink>
     </nav>
 
     <div class="navbar__user">
