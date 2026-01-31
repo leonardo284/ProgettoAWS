@@ -9,6 +9,7 @@
 
   const emit = defineEmits(['close', 'refreshMatch']);
 
+  // --- STATO DEL FORM ---
   const selectedTeamId = ref(null);
   const selectedType = ref(null);
   const selectedPlayerId = ref('');
@@ -18,12 +19,7 @@
 
   const eventTypes = ["GOAL", "AMMONIZIONE", "ESPULSIONE", "RIGORE", "ANGOLO", "SOSTITUZIONE", "FALLO"];
 
-  watch(() => props.isOpen, (newVal) => {
-    if (newVal) {
-      minute.value = props.match?.minutoCorrente || 0;
-      resetForm();
-    }
-  });
+  // --- LOGICA DI FILTRAGGIO DINAMICO ---
 
   const homeTeam = computed(() => props.match?.squadre?.casa);
   const awayTeam = computed(() => props.match?.squadre?.trasferta);
@@ -31,13 +27,75 @@
     selectedTeamId.value === homeTeam.value?.teamId ? homeTeam.value : awayTeam.value
   );
 
-  const starters = computed(() => selectedTeam.value?.formazione?.titolari || []);
-  const bench = computed(() => selectedTeam.value?.formazione?.panchina || []);
+  // 1. Identifica chi ha lasciato il campo (per sostituzione o espulsione)
+  const playersOffField = computed(() => {
+    const off = new Set();
+    props.match?.eventi?.forEach(e => {
+      if (e.tipo === 'SOSTITUZIONE' && e.playerOutId) off.add(Number(e.playerOutId));
+      if (e.tipo === 'ESPULSIONE' && e.playerId) off.add(Number(e.playerId));
+    });
+    return off;
+  });
+
+  // 2. Identifica chi è già entrato dalla panchina
+  const playersAlreadyEntered = computed(() => {
+    const entered = new Set();
+    props.match?.eventi?.forEach(e => {
+      if (e.tipo === 'SOSTITUZIONE' && e.playerId) entered.add(Number(e.playerId));
+    });
+    return entered;
+  });
+
+  // 3. Conteggio sostituzioni per squadra
+  const substitutionsCount = computed(() => {
+    if (!props.match?.eventi || !selectedTeamId.value) return 0;
+    return props.match.eventi.filter(e => 
+      e.tipo === 'SOSTITUZIONE' && Number(e.squadraId) === Number(selectedTeamId.value)
+    ).length;
+  });
+
+  const hasSubstitutionsLeft = computed(() => substitutionsCount.value < 5);
+
+  // 4. Giocatori ATTUALMENTE IN CAMPO
+  const playersCurrentlyOnField = computed(() => {
+    if (!selectedTeam.value) return [];
+    const off = playersOffField.value;
+    const entered = playersAlreadyEntered.value;
+
+    // Titolari ancora in campo
+    const startersStillIn = (selectedTeam.value.formazione?.titolari || []).filter(p => !off.has(Number(p.playerId)));
+
+    // Sostituti entrati in campo
+    const subsInField = (selectedTeam.value.formazione?.panchina || []).filter(p => entered.has(Number(p.playerId)) && !off.has(Number(p.playerId)));
+
+    return [...startersStillIn, ...subsInField];
+  });
+
+  // 5. Giocatori DISPONIBILI IN PANCHINA
+  const availableBench = computed(() => {
+    if (!selectedTeam.value || !hasSubstitutionsLeft.value) return [];
+    const entered = playersAlreadyEntered.value;
+
+    return (selectedTeam.value.formazione?.panchina || []).filter(p => !entered.has(Number(p.playerId)));
+  });
+
+  // --- GESTIONE AZIONI ---
+
+  watch(() => props.isOpen, (newVal) => {
+    if (newVal) {
+      minute.value = props.match?.minutoCorrente || 0;
+      resetForm();
+    }
+  });
 
   const isValid = computed(() => {
     if (!selectedTeamId.value || !selectedType.value) return false;
     if (['ANGOLO', 'RIGORE', 'FALLO'].includes(selectedType.value)) return true;
-    if (selectedType.value === 'SOSTITUZIONE') return outPlayerId.value && inPlayerId.value;
+    
+    if (selectedType.value === 'SOSTITUZIONE') {
+      return outPlayerId.value && inPlayerId.value && hasSubstitutionsLeft.value;
+    }
+    
     return selectedPlayerId.value !== '';
   });
 
@@ -110,27 +168,38 @@
         </div>
 
         <div v-if="selectedType === 'SOSTITUZIONE' && selectedTeamId" class="sub-container">
-          <div class="form-group">
-            <label>Esce</label>
-            <select v-model="outPlayerId" class="select-input">
-              <option value="" disabled>-- Seleziona --</option>
-              <option v-for="p in starters" :key="p.playerId" :value="p.playerId">{{ p.nome }}</option>
-            </select>
+          <div class="sub-limit-info" :class="{ 'danger': !hasSubstitutionsLeft }">
+            Sostituzioni effettuate: {{ substitutionsCount }} / 5
           </div>
-          <div class="form-group">
-            <label>Entra</label>
-            <select v-model="inPlayerId" class="select-input">
-              <option value="" disabled>-- Seleziona --</option>
-              <option v-for="p in bench" :key="p.playerId" :value="p.playerId">{{ p.nome }}</option>
-            </select>
-          </div>
+
+          <template v-if="hasSubstitutionsLeft">
+            <div class="form-group">
+              <label>Esce</label>
+              <select v-model="outPlayerId" class="select-input">
+                <option value="" disabled>-- Seleziona --</option>
+                <option v-for="p in playersCurrentlyOnField" :key="p.playerId" :value="p.playerId">
+                  {{ p.nome }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Entra</label>
+              <select v-model="inPlayerId" class="select-input">
+                <option value="" disabled>-- Seleziona --</option>
+                <option v-for="p in availableBench" :key="p.playerId" :value="p.playerId">
+                  {{ p.nome }}
+                </option>
+              </select>
+            </div>
+          </template>
+          <p v-else class="limit-msg">Limite sostituzioni raggiunto per questa squadra.</p>
         </div>
 
         <div v-else-if="selectedType && !['RIGORE', 'ANGOLO', 'FALLO'].includes(selectedType)" class="form-group">
-          <label>Giocatore</label>
+          <label>Giocatore (In campo)</label>
           <select v-model="selectedPlayerId" class="select-input" :disabled="!selectedTeamId">
             <option value="" disabled>-- Seleziona Giocatore --</option>
-            <option v-for="p in starters" :key="p.playerId" :value="p.playerId">
+            <option v-for="p in playersCurrentlyOnField" :key="p.playerId" :value="p.playerId">
               {{ p.nome }}
             </option>
           </select>
@@ -178,6 +247,10 @@
   .event-btn.selected { background: #ef4444; color: white; border-color: #ef4444; }
 
   .sub-container { background: #f1f5f9; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
+  .sub-limit-info { font-size: 11px; font-weight: bold; margin-bottom: 10px; color: #64748b; }
+  .sub-limit-info.danger { color: #ef4444; }
+  .limit-msg { font-size: 13px; color: #ef4444; font-weight: bold; text-align: center; margin: 10px 0; }
+  
   .select-input, .minute-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.9rem; outline: none; }
 
   .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
