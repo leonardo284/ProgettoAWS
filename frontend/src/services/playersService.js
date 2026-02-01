@@ -39,7 +39,7 @@ export const getPlayerStats = async (playerId) => {
     };
   } catch (error) {
     console.error(`Errore nel recupero statistiche per ${playerId}:`, error);
-    // Ritorna valori a zero in caso di errore per non rompere la UI
+    // Ritorna valori a zero in caso di errore
     return { played: 0, minutes: 0, goals: 0, assists: 0 };
   }
 };

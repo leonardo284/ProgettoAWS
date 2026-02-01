@@ -1,7 +1,10 @@
 import api from "./api";
 
+/**
+ *  @description Recupera la classifica delle squadre.
+ */
 export async function getStandings() {
   const res = await api.get("/standings");
-  // Ordino per punti per determinare la posizione in classifica
+  // la classifica arriva già ordinata dal backend ma per sicurezza la ordino anche qui
   return res.data.sort((a, b) => b.points - a.points);
 }
