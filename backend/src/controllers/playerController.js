@@ -2,6 +2,7 @@ const Player = require('../models/player');
 
 /**
  * GET /players
+ * Recupera tutti i giocatori
  */
 exports.listPlayers = (req, res) => {
   Player.find()
@@ -28,21 +29,10 @@ exports.readPlayer = (req, res) => {
  * Recupera tutti i giocatori di una squadra
  */
 exports.listPlayersByTeam = (req, res) => {
-  const teamId = Number(req.params.teamId); // Converto il parametro in numero
+  const teamId = Number(req.params.teamId);
 
   Player.find({ 'currentTeam.teamId': teamId })
     .then(players => res.json(players))
     .catch(err => res.status(500).json({ error: "Errore nel recupero dei giocatori", details: err }));
-};
-
-/**
- * POST /players
- */
-exports.createPlayer = (req, res) => {
-  const player = new Player(req.body);
-
-  player.save()
-    .then(doc => res.status(201).json(doc))
-    .catch(err => res.status(500).send(err));
 };
 

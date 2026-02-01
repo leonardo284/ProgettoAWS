@@ -62,7 +62,7 @@ onMounted(() => {
   fetchMatch();
 
   // Inizializzazione Socket.io
-  socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3000');
+  socket = io('http://localhost:3000');
 
   // Gestione dei cambi di STATO (Inizio/Fine tempi)
   socket.on('matchStatusUpdate', (updatedData) => {

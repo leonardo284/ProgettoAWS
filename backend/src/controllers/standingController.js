@@ -7,29 +7,35 @@ const Match = require('../models/match');
  */
 exports.listStandings = async (req, res) => {
   try {
+    // nelle standing è stato aggiunto anche il campo seasons, che nel nostro caso specifico è fisso a "2025/2026"
     const { stagione = "2025/2026" } = req.query;
 
+    // prendo le righe di classifica della stagione attuale e le ordino per punti prima, per differenza reti poi e poi goal fatti  
     const standings = await Standing.find({ season: stagione })
-      .sort({ points: -1, goalDifference: -1, goals: -1 });
+                                    .sort({ points: -1, goalDifference: -1, goals: -1 });
+
 
     const standingsWithForm = await Promise.all(
+
       standings.map(async (row) => {
-        // Converto row.teamId in Number per sicurezza
+        
         const tId = Number(row.teamId);
 
-        // 2. Cerco i match usando i nomi dei campi esatti del tuo schema
+        // per ogni riga di classifica prendo il teamId e cerco le ultime 5 partite giocate da quella squadra
+
         const lastMatches = await Match.find({
-          stagione: stagione, // Campo corretto: stagione
-          stato: "FINITA",    // Stato corretto
+          stagione: stagione, 
+          stato: "FINITA",    
           $or: [
             { "squadre.casa.teamId": tId },
             { "squadre.trasferta.teamId": tId }
           ]
         })
-        .sort({ dataOra: -1 }) // Ordino per dataOra 
+        .sort({ dataOra: -1 }) // Ordino per dataOra decrescente
         .limit(5);
 
-        // 3. Calcolo del Trend (W, D, L)
+
+        // per ogni partita determino se è stata una vittoria, sconfitta o pareggio
         const form = lastMatches.map(match => {
           const isCasa = match.squadre.casa.teamId === tId;
           const goalFatti = isCasa ? match.risultato.casa : match.risultato.trasferta;
@@ -40,41 +46,18 @@ exports.listStandings = async (req, res) => {
           return 'D';
         }).reverse(); // Dal più vecchio al più recente
 
+        // resituisco i dat della classifica combinati con il trend delle ultime partite
         return {
-          ...row.toObject(),
+          ...row.toObject(),   // creo un oggetto plain js dalla riga mongoose
           form: form
         };
       })
+
     );
 
     res.json(standingsWithForm);
   } catch (err) {
     console.error("Errore listStandings:", err);
-    res.status(500).json({ error: err.message });
-  }
-};
-
-
-/**
- * PUT /standings/:teamId
- */
-exports.updateStanding = async (req, res) => {
-  try {
-    const { teamId } = req.params;
-    const { season = "2025/2026" } = req.query;
-
-    const standing = await Standing.findOneAndUpdate(
-      { teamId, season },
-      req.body,
-      { new: true }
-    );
-
-    if (!standing) {
-      return res.status(404).json({ message: "Standing not found" });
-    }
-
-    res.json(standing);
-  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
