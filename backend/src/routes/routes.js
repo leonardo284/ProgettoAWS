@@ -1,75 +1,17 @@
-const express = require('express');
+const playerRoutes = require('./playerRoutes');
+const teamRoutes = require('./teamRoutes');
+const matchRoutes = require('./matchRoutes');
+const standingRoutes = require('./standingRoutes');
+const statsRoutes = require('./statsRoutes');
 const playerController = require('../controllers/playerController');
-const teamController = require('../controllers/teamController');
-const matchController = require('../controllers/matchController');
-const standingController = require('../controllers/standingController');
-const playerStatsController = require('../controllers/playerStatsController');
-const clubStatsController = require('../controllers/clubStatsController');
 
+const express = require('express');
 const router = express.Router();
 
-// PLAYERS
-router.get('/', playerController.listPlayers);
-router.get('/players', playerController.listPlayers);
-router.get('/players/:id', playerController.readPlayer);
-router.put('/players/:id', playerController.updatePlayer);
-router.delete('/players/:id', playerController.deletePlayer);
-
-// TEAMS
-router.get('/teams', teamController.listTeams);
-router.get('/teams/:id', teamController.readTeam);
-router.get('/teams/:teamId/players', playerController.listPlayersByTeam);
-
-// MATCHES
-router.post('/matches', matchController.createMatch);
-router.get('/matches', matchController.listMatches);
-router.get('/matches/last/:limit', matchController.listLastMatches);
-router.get('/matches/giornata/:giornata', matchController.listMatchesByGiornata);
-router.get('/matches/squadra/:teamId', matchController.listMatchesByTeam);
-router.get('/matches/:id', matchController.readMatch);
-router.put('/matches/:id', matchController.updateMatch);
-router.delete('/matches/:id', matchController.deleteMatch);
-
-// MATCHES - Live Admin Actions
-// Cambia lo stato (es. da NON_INIZIATA a IN_CORSO_PRIMO_TEMPO) e salva il timestamp
-router.post('/matches/:id/start-first-half', matchController.startFirstHalf);
-router.post('/matches/:id/start-second-half', matchController.startSecondHalf);
-router.post('/matches/:id/end-period', matchController.endPeriod); // Per intervallo o fine partita
-
-// Gestione Eventi Live
-router.post('/matches/:id/events', matchController.addLiveEvent); 
-router.delete('/matches/:id/events/:eventId', matchController.deleteLiveEvent);
-
-// Gestione Pubblicazione Formazioni
-router.patch('/matches/:id/publish-formations', matchController.publishFormations);
-
-// STANDINGS
-router.get("/standings", standingController.listStandings);
-router.get("/standings/:teamId", standingController.readStanding);
-router.put("/standings/:teamId", standingController.updateStanding);
-router.delete("/standings/:teamId", standingController.deleteStanding);
-
-router.get("/standings/top/:n", standingController.getTopN);
-router.get("/standings/bottom/:n", standingController.getBottomN);
-
-// PLAYER STATISTICS
-// Recupera le statistiche di un singolo giocatore tramite il suo ID
-router.get('/stats/players/:id', playerStatsController.getPlayerStats);
-
-// Recupera la classifica marcatori (Top N)
-router.get('/stats/top-scorers', playerStatsController.getTopScorers);
-
-// Recupera la classifica assistman (Top N)
-router.get('/stats/top-assists', playerStatsController.getTopAssists);
-
-// Recupera le statistiche di tutti i giocatori di una squadra
-router.get('/stats/teams/:teamId', playerStatsController.getTeamStats);
-
-router.get('/stats/top-yellows', playerStatsController.getTopYellows);
-
-router.get('/stats/top-reds', playerStatsController.getTopReds);
-
-// Rotta per ottenere le statistiche complete dei club
-router.get('/clubs/full', clubStatsController.getFullClubStats);
+router.use('/players', playerRoutes);
+router.use('/teams', teamRoutes);
+router.use('/matches', matchRoutes);
+router.use('/standings', standingRoutes);
+router.use('/stats', statsRoutes);
 
 module.exports = router;

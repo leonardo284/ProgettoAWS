@@ -2,7 +2,6 @@
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
-// Importiamo i componenti layout
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 

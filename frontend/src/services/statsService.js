@@ -21,7 +21,7 @@ export const getTopRedCards = async () => {
 };
 
 export const getClubRankings = async () => {
-  const response = await api.get('/clubs/full'); 
+  const response = await api.get('/stats/teams/full'); 
   return response.data;
 };
 

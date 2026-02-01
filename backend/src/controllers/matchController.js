@@ -6,17 +6,6 @@ const PlayerStats = require('../models/playerStats');
 // 300 secondi (5 min) * 0.3 = 90 minuti di gioco
 const ACCELERATION_FACTOR = 0.3;
 
-/**
- * POST /matches
- * Crea una partita
- */
-exports.createMatch = (req, res) => {
-  const match = new Match(req.body);
-
-  match.save()
-    .then(doc => res.status(201).json(doc))
-    .catch(err => res.status(500).send(err));
-};
 
 /**
  * GET /matches/:id
@@ -37,39 +26,6 @@ exports.readMatch = async (req, res) => {
   }
 };
 
-/**
- * PUT /matches/:id
- * Modifica una partita
- */
-exports.updateMatch = (req, res) => {
-  Match.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true, runValidators: true }
-  )
-    .then(match => {
-      if (!match) {
-        return res.status(404).send('Match not found');
-      }
-      res.json(match);
-    })
-    .catch(err => res.status(500).send(err));
-};
-
-/**
- * DELETE /matches/:id
- * Elimina una partita
- */
-exports.deleteMatch = (req, res) => {
-  Match.findByIdAndDelete(req.params.id)
-    .then(match => {
-      if (!match) {
-        return res.status(404).send('Match not found');
-      }
-      res.json({ message: 'Match deleted' });
-    })
-    .catch(err => res.status(500).send(err));
-};
 
 /**
  * GET /matches
@@ -108,21 +64,6 @@ exports.listMatchesByTeam = (req, res) => {
     .then(matches => res.json(matches))
     .catch(err => res.status(500).send(err));
 };
-
-
-exports.listLastMatches = async (req, res) => {
-  try {
-    const limit = Number(req.params.limit) || 5
-
-    const matches = await Match.find()
-      .sort({ dataOra: -1 })
-      .limit(limit)
-
-    res.json(matches)
-  } catch (err) {
-    res.status(500).json({ message: 'Errore nel recupero match' })
-  }
-}
 
 
 /**
@@ -239,50 +180,6 @@ exports.addLiveEvent = async (req, res) => {
   }
 };
 
-
-
-/**
- * DELETE /matches/:id/events/:eventId
- * Rimuove un evento (e corregge il punteggio se era un goal)
- */
-exports.deleteLiveEvent = async (req, res) => {
-  try {
-    const match = await Match.findOne({ matchId: Number(req.params.id) });
-    if (!match) return res.status(404).json({ message: "Match non trovato" });
-
-    const evento = match.eventi.id(req.params.eventId);
-    if (!evento) return res.status(404).json({ message: "Evento non trovato" });
-
-    // Se rimuoviamo un goal, aggiorniamo il punteggio
-    if (evento.tipo === "GOAL") {
-      if (evento.squadraId === match.squadre.casa.teamId) match.risultato.casa--;
-      else match.risultato.trasferta--;
-    }
-
-    evento.remove();
-    await match.save();
-    res.json(match);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-/**
- * PATCH /matches/:id/publish-formations
- * Rende visibili le formazioni
- */
-exports.publishFormations = async (req, res) => {
-  try {
-    const match = await Match.findOne({ matchId: Number(req.params.id) });
-    if (!match) return res.status(404).json({ message: "Match non trovato" });
-
-    match.formazioniPubblicate = true;
-    await match.save();
-    res.json({ message: "Formazioni pubblicate" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
 /**
  * Logica interna per aggiornare la classifica

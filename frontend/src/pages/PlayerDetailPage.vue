@@ -4,6 +4,9 @@ import { useRoute } from 'vue-router';
 import playerService from '@/services/playersService'; 
 import { getTeamById } from '@/services/teamsService'; 
 
+import AppNavbar from '@/components/layout/AppNavbar.vue'
+import AppFooter from '@/components/layout/AppFooter.vue'
+
 import PlayerHeader from '@/components/players/PlayerHeader.vue';
 import PlayerGeneralStats from '@/components/players/PlayerGeneralStats.vue';
 import PlayerDisciplinaryStats from '@/components/players/PlayerDisciplinaryStats.vue';
@@ -61,6 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <AppNavbar />
   <div v-if="loading" class="player-loader">
     <div class="spinner"></div>
     <p>Caricamento profilo atleta...</p>
@@ -83,6 +87,7 @@ onMounted(async () => {
     <h2>Atleta non trovato</h2>
     <router-link to="/club">Torna ai Club</router-link>
   </div>
+  <AppFooter />
 </template>
 
 <style scoped>

@@ -46,29 +46,3 @@ exports.createPlayer = (req, res) => {
     .catch(err => res.status(500).send(err));
 };
 
-/**
- * PUT /players/:id
- */
-exports.updatePlayer = (req, res) => {
-  Player.findOneAndUpdate({ playerId: req.params.id }, req.body, {
-    new: true,
-    runValidators: true
-  })
-    .then(player => {
-      if (!player) return res.status(404).send('Player not found');
-      res.json(player);
-    })
-    .catch(err => res.status(500).send(err));
-};
-
-/**
- * DELETE /players/:id
- */
-exports.deletePlayer = (req, res) => {
-  Player.findOneAndDelete({ playerId: req.params.id })
-    .then(player => {
-      if (!player) return res.status(404).send('Player not found');
-      res.json({ message: 'Player deleted' });
-    })
-    .catch(err => res.status(500).send(err));
-};

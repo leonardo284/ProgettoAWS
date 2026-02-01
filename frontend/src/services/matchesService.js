@@ -2,17 +2,6 @@ import api from './api'
 import { getTeams } from './teamsService'
 import { getPlayersByTeamId } from './playersService'; 
 
-// CREATE
-export async function createMatch(data) {
-  const res = await api.post('/matches', data)
-  return res.data
-}
-
-// READ ONE
-/*export async function getMatchById(id) {
-  const res = await api.get(`/matches/${id}`)
-  return res.data
-}*/
 
 // READ ONE
 export async function getMatchById(id) {
@@ -60,17 +49,6 @@ export async function getMatchById(id) {
   };
 }
 
-// UPDATE
-export async function updateMatch(id, data) {
-  const res = await api.put(`/matches/${id}`, data)
-  return res.data
-}
-
-// DELETE
-export async function deleteMatch(id) {
-  const res = await api.delete(`/matches/${id}`)
-  return res.data
-}
 
 // BY TEAM
 // Recupera ogni match di una singola squadra tramite il suo id
@@ -222,27 +200,9 @@ export async function addLiveEvent(id, eventData) {
   return res.data;
 }
 
-/**
- * Rimuove un evento live
- */
-export async function deleteLiveEvent(id, eventId) {
-  const res = await api.delete(`/matches/${id}/events/${eventId}`);
-  return res.data;
-}
-
-/**
- * Rende pubbliche le formazioni
- */
-export async function publishFormations(id) {
-  const res = await api.patch(`/matches/${id}/publish-formations`);
-  return res.data;
-}
 
 export default {
-  createMatch,
   getMatchById,
-  updateMatch,
-  deleteMatch,
   getMatchesByTeamId,
   getLastMatches,
   getMatchesByGiornata,
@@ -250,7 +210,5 @@ export default {
   startFirstHalf,
   startSecondHalf,
   endPeriod,
-  addLiveEvent,
-  deleteLiveEvent,
-  publishFormations
+  addLiveEvent
 };

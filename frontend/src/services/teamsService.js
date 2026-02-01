@@ -9,8 +9,3 @@ export async function getTeamById(id) {
   const res = await api.get(`/teams/${id}`)
   return res.data
 }
-
-export async function getPlayersByTeam(teamName) {
-  const res = await api.get(`/teams/${teamName}/players`)
-  return res.data
-}
