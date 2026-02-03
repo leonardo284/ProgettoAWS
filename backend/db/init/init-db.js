@@ -478,7 +478,8 @@ async function generateMatches(teams, refereesDb) {
 
     const toSnapshot = (p) => ({
       playerId: p.playerId,
-      nome: `${p.nome} ${p.cognome}`,
+      nome: p.nome,  
+      cognome: p.cognome,
       ruolo: p.ruolo
     });
 

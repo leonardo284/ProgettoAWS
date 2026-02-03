@@ -57,7 +57,7 @@ const router = createRouter({
       path: '/login',
       name: 'Login',
       component: () => import('@/pages/LoginPage.vue'), 
-      meta: { title: 'Accedi - Serie A' }
+      meta: { title: 'Accedi - ASW' }
     },
     {
       path: '/account',

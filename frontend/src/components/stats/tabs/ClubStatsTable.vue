@@ -1,10 +1,11 @@
 <script setup>
-import ClubStatsRow from './ClubStatsRow.vue';
+  import ClubStatsRow from './ClubStatsRow.vue';
 
-defineProps({
-  clubs: { type: Array, required: true }
-});
+  defineProps({
+    clubs: { type: Array, required: true }
+  });
 </script>
+
 <template>
   <div class="table-container">
     <table class="club-table">
@@ -35,37 +36,36 @@ defineProps({
 </template>
 
 <style scoped>
-/* Stile per indicare all'utente che l'intestazione è interattiva */
-.club-table th[title] {
-  cursor: help;
-  border-bottom: 2px solid #eee;
-  text-decoration: underline dotted #ccc; /* Opzionale: aggiunge una riga punteggiata sotto */
-}
+  .club-table th[title] {
+    cursor: help;
+    border-bottom: 2px solid #eee;
+    text-decoration: underline dotted #ccc; 
+  }
 
-.table-container {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  overflow-x: auto;
-  margin-top: 20px;
-}
+  .table-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    overflow-x: auto;
+    margin-top: 20px;
+  }
 
-.club-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 800px;
-}
+  .club-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+  }
 
-.club-table th {
-  padding: 18px 10px;
-  background: #fcfcfc;
-  color: #888;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  text-align: center;
-}
+  .club-table th {
+    padding: 18px 10px;
+    background: #fcfcfc;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-align: center;
+  }
 
-.text-left { text-align: left !important; }
-.rank-col { width: 60px; }
+  .text-left { text-align: left !important; }
+  .rank-col { width: 60px; }
 </style>

@@ -3,7 +3,9 @@ import { getTeams } from './teamsService'
 import { getPlayersByTeamId } from './playersService'; 
 
 
-// READ ONE
+/**
+ * Recupera il dettaglio completo di una singola partita tramite il suo id
+ */
 export async function getMatchById(id) {
   const resMatch = await api.get(`/matches/${id}`);
   const match = resMatch.data;
@@ -15,6 +17,7 @@ export async function getMatchById(id) {
     getPlayersByTeamId(match.squadre.trasferta.teamId)
   ]);
 
+  // creo lista con tutti i giocatori della partita
   const allPlayers = [...playersCasa, ...playersTrasferta];
 
   // Funzione per aggiungere foto e ruolo esteso a ogni giocatore nella formazione
@@ -23,9 +26,11 @@ export async function getMatchById(id) {
     return { ...p, foto: dettagli?.foto || '', ruolo: dettagli?.ruolo || p.ruolo };
   });
 
+  // recupero i due teams della partita
   const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId);
   const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId);
 
+  // restituisco oltre ai dati del match anche i loghi e le formazioni arricchite
   return {
     ...match,
     squadre: {
@@ -50,11 +55,12 @@ export async function getMatchById(id) {
 }
 
 
-// BY TEAM
-// Recupera ogni match di una singola squadra tramite il suo id
+/** 
+* Recupera ogni match di una singola squadra tramite il suo id
+*/
 export const getMatchesByTeamId = async (teamId) => {
   try {
-    // 1. Recupera in parallelo i match della squadra e la lista completa dei team
+    // Recupera in parallelo i match della squadra e la lista completa dei team
     const [resMatches, teams] = await Promise.all([
       api.get(`/matches/squadra/${teamId}`),
       getTeams()
@@ -62,7 +68,7 @@ export const getMatchesByTeamId = async (teamId) => {
 
     const matches = resMatches.data;
 
-    // 2. Inserisce il logo di ogni squadra dentro l'oggetto match
+    // Inserisce il logo di ogni squadra dentro l'oggetto match
     return matches.map(match => {
       const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId);
       const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId);
@@ -82,9 +88,11 @@ export const getMatchesByTeamId = async (teamId) => {
 };
 
 
-// Ultime N partite
+/**
+ * Recupero le ultime N partite 
+ */
 export async function getLastMatches(limit = 10) {
-  // 1. Recupero tutti i match e i team
+  // Recupero tutti i match e i team
   const [resMatches, teams] = await Promise.all([
     api.get(`/matches`), 
     getTeams()
@@ -92,11 +100,9 @@ export async function getLastMatches(limit = 10) {
 
   let allMatches = resMatches.data;
 
-  // 2. Logica di selezione:
-  // Filtro le partite FINITE
-  const finishedMatches = allMatches
-    .filter(m => m.stato === "FINITA")
-    .sort((a, b) => new Date(b.dataOra) - new Date(a.dataOra)); // Dalla più recente alla più vecchia
+  // Filtro le partite FINITE ordinate dalla più recente
+  const finishedMatches = allMatches.filter(m => m.stato === "FINITA")
+                                    .sort((a, b) => new Date(b.dataOra) - new Date(a.dataOra));
 
   let displayMatches = [];
 
@@ -105,17 +111,17 @@ export async function getLastMatches(limit = 10) {
     displayMatches = finishedMatches.slice(0, limit);
   } else {
     // Se nessuna è finita, prendo le prime da giocare
-    displayMatches = allMatches
-      .filter(m => m.stato === "NON_INIZIATA")
-      .sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra))
-      .slice(0, limit);
+    displayMatches = allMatches.filter(m => m.stato === "NON_INIZIATA")
+                                .sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra))
+                                .slice(0, limit);
   }
 
-  // 3. Mappatura finale per aggiungere i loghi 
+  // Mappatura finale per aggiungere i loghi 
   return displayMatches.map(match => {
     const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId || t.nome === match.squadre.casa.nome)
     const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId || t.nome === match.squadre.trasferta.nome)
 
+    // restituisco il match con i loghi delle squadre
     return {
       ...match,
       squadre: {
@@ -126,14 +132,17 @@ export async function getLastMatches(limit = 10) {
   })
 }
 
+/**
+ * Recupera i match di una specifica giornata, arricchiti con i loghi delle squadre
+ */
 export async function getMatchesByGiornata(giornata) {
-  // 1. Recupero simultaneo di match e team per avere i loghi
+  // Recupero simultaneo di match della giornata indicata e team per avere i loghi
   const [resMatches, teams] = await Promise.all([
     api.get(`/matches/giornata/${giornata}`),
     getTeams()
   ])
 
-  // 2. Mappatura per inserire i loghi delle squadre
+  // Mappatura per inserire i loghi delle squadre
   const matchesWithLogos = resMatches.data.map(match => {
     const teamCasa = teams.find(t => t.teamId === match.squadre.casa.teamId)
     const teamTrasferta = teams.find(t => t.teamId === match.squadre.trasferta.teamId)
@@ -154,11 +163,18 @@ export async function getMatchesByGiornata(giornata) {
  * Raggruppa e ordina i match per data
  */
 export const groupMatchesByDate = (matches) => {
+  // ordino i match per data
   const sortedMatches = [...matches].sort((a, b) => new Date(a.dataOra) - new Date(b.dataOra))
 
+  // creo un dizionario dove la chiave è la data e il valore è la lista dei match di quella data
   return sortedMatches.reduce((groups, match) => {
+    // estraggo la parte di data (YYYY-MM-DD) dalla data completa che funge da chiave
     const dateKey = new Date(match.dataOra).toISOString().split('T')[0]
+    
+    // se il gruppo per quella data non esiste, lo creo
     if (!groups[dateKey]) groups[dateKey] = []
+    
+    // aggiungo il match al gruppo corrispondente
     groups[dateKey].push(match)
     return groups
   }, {})
@@ -193,7 +209,6 @@ export async function endPeriod(id) {
 
 /**
  * Aggiunge un evento live (il minuto viene calcolato dal backend)
- * @param {Object} eventData - { tipo, squadraId, playerId, assistPlayerId }
  */
 export async function addLiveEvent(id, eventData) {
   const res = await api.post(`/matches/${id}/events`, eventData);

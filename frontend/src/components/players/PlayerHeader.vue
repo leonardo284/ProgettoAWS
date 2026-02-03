@@ -1,26 +1,26 @@
 <script setup>
-import { computed } from 'vue';
+  import { computed } from 'vue';
 
-const props = defineProps({
-  player: { type: Object, required: true },
-  team: { type: Object, default: null }
-});
+  const props = defineProps({
+    player: { type: Object, required: true },
+    team: { type: Object, default: null }
+  });
 
-const playerAge = computed(() => {
-  if (!props.player.dataNascita) return 'N/D';
-  const birth = new Date(props.player.dataNascita);
-  const diff = Date.now() - birth.getTime();
-  const ageDate = new Date(diff);
-  return Math.abs(ageDate.getUTCFullYear() - 1970);
-});
+  const playerAge = computed(() => {
+    if (!props.player.dataNascita) return 'N/D';
+    const birth = new Date(props.player.dataNascita);
+    const diff = Date.now() - birth.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  });
 
-// Usiamo il LOGO invece del banner
-const teamLogo = computed(() => props.team?.logo || '');
+  // Usiamo il LOGO invece del banner
+  const teamLogo = computed(() => props.team?.logo || '');
 
-// Variabili CSS per il colore del team
-const headerStyle = computed(() => ({
-  '--team-color': props.team?.colori?.[0] || '#0a192f'
-}));
+  // Variabili CSS per il colore del team
+  const headerStyle = computed(() => ({
+    '--team-color': props.team?.colori?.[0] || '#0a192f'
+  }));
 </script>
 
 <template>
@@ -72,91 +72,136 @@ const headerStyle = computed(() => ({
 </template>
 
 <style scoped>
-.player-header {
-  position: relative;
-  padding: 60px 10%;
-  color: white;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  background-color: var(--team-color);
-}
+  /* --- STILE DESKTOP --- */
+  .player-header {
+    position: relative;
+    padding: 60px 10%;
+    color: white;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background-color: var(--team-color);
+  }
 
-.blur-bg {
-  position: absolute;
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%) scale(1.1); /* Centrato e scalato */
-  width: 300px; /* Dimensione logo ridotta in background */
-  height: 300px;
-  background-size: contain; /* Mostra il logo intero */
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(8px); /* Sfocatura ridotta */
-  z-index: 1;
-  opacity: 0.5; /* Opacità per non disturbare troppo */
-}
+  .blur-bg {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(1.1);
+    width: 300px; height: 300px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(8px);
+    z-index: 1;
+    opacity: 0.3;
+  }
 
-.header-overlay {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7));
-  z-index: 2;
-}
+  .header-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+    z-index: 2;
+  }
 
-.header-container {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
+  .header-container {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
 
-/* Stili Testo e Foto */
-.photo-circle {
-  width: 220px; height: 220px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-}
-.photo-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .player-main-info {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
 
-.lastname { display: block; font-size: 4.5rem; font-weight: 900; text-transform: uppercase; line-height: 0.9; }
-.firstname { display: block; font-size: 1.8rem; font-weight: 300; text-transform: uppercase; }
+  .photo-circle {
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+  }
+  .photo-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
-.role-tag {
-  margin-top: 15px;
-  display: inline-block;
-  background: #00f2d3;
-  color: #000;
-  padding: 8px 20px;
-  border-radius: 4px;
-  font-weight: 800;
-}
+  /* --- TIPOGRAFIA UNIFORMATA --- */
+  .text-identity { text-align: left; }
 
-.physical-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  padding: 30px;
-  border-radius: 16px;
-  width: 320px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
+  .team-label { 
+    font-weight: 700; 
+    opacity: 0.8; 
+    text-transform: uppercase; 
+    font-size: 1.1rem; 
+    display: block;
+    margin-bottom: 5px;
+  }
 
-.stat-row {
-  display: flex; justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.stat-row:last-child { border: none; }
-.stat-label { font-size: 0.75rem; font-weight: 600; opacity: 0.8; }
-.stat-value { font-weight: 700; font-size: 1.2rem; }
+  .fullname { 
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+  }
 
-@media (max-width: 1024px) {
-  .header-container { flex-direction: column; text-align: center; gap: 40px; }
-  .lastname { font-size: 3rem; }
-}
+  .firstname, .lastname { 
+    display: inline;
+    font-size: 3.5rem; 
+    font-weight: 900; 
+    text-transform: uppercase; 
+  }
+
+  .lastname { margin-left: 10px; } 
+
+  .role-tag {
+    margin-top: 15px;
+    display: inline-block;
+    background: #00f2d3;
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-weight: 800;
+  }
+
+  /* Card Dati Fisici */
+  .physical-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    padding: 30px;
+    border-radius: 16px;
+    width: 320px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .stat-row {
+    display: flex; justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .stat-row:last-child { border: none; }
+  .stat-label { font-size: 0.75rem; font-weight: 600; opacity: 0.8; }
+  .stat-value { font-weight: 700; font-size: 1.2rem; }
+
+  /* --- RESPONSIVE MOBILE --- */
+  @media (max-width: 1024px) {
+    .header-container { flex-direction: column; text-align: center; gap: 30px; }
+    .player-main-info { flex-direction: column; gap: 20px; }
+    .text-identity { text-align: center; }
+    .photo-circle { width: 160px; height: 160px; }
+
+    .firstname, .lastname { 
+      font-size: 2.2rem; 
+      display: block; 
+      margin-left: 0;
+    }
+    .team-label { font-size: 0.9rem; }
+  }
+
+  @media (max-width: 480px) {
+    .firstname, .lastname { font-size: 1.8rem; }
+    .photo-circle { width: 130px; height: 130px; }
+  }
 </style>

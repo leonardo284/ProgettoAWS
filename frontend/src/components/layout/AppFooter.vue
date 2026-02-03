@@ -19,7 +19,6 @@
   background-color: #003366; 
   padding: 3rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-family: sans-serif;
   color: white; 
 }
 

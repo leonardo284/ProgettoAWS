@@ -49,7 +49,6 @@
     padding: 16px;
     margin: 12px 0;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    font-family: 'Inter', sans-serif;
   }
 
   .time-column {
