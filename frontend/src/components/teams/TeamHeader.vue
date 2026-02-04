@@ -14,14 +14,14 @@
     youtube: '<svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>'
   };
 
-  // ESTRAZIONE DINAMICA SOCIAL DAL TEAM
+  // estrazione delle piattaforme social dal team (escludendo il sito web)
   const socialPlatforms = computed(() => {
-    // Filtro l'oggetto social del team escludendo il sito web (che ha già il suo bottone)
     if (!props.team.social) return {};
     const { sito, ...platforms } = props.team.social;
-    return platforms; // Ritorna es: { instagram: 'instagram.com/inter', facebook: '...' }
+    return platforms;
   });
 
+  // definisco lo stile dinamico per il banner della squadra
   const headerStyle = computed(() => {
     const bgImage = props.team.banner || props.team.immagineCopertina || '';
     return {
@@ -33,6 +33,7 @@
     };
   });
 </script>
+
 <template>
   <header class="team-header" :style="headerStyle">
     <div class="header-content">

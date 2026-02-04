@@ -1,66 +1,66 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import playerService from '@/services/playersService'; 
-import { getTeamById } from '@/services/teamsService'; 
+  import { ref, onMounted } from 'vue';
+  import { useRoute } from 'vue-router';
+  import playerService from '@/services/playersService'; 
+  import { getTeamById } from '@/services/teamsService'; 
 
-import AppNavbar from '@/components/layout/AppNavbar.vue'
-import AppFooter from '@/components/layout/AppFooter.vue'
+  import AppNavbar from '@/components/layout/AppNavbar.vue'
+  import AppFooter from '@/components/layout/AppFooter.vue'
 
-import PlayerHeader from '@/components/players/PlayerHeader.vue';
-import PlayerGeneralStats from '@/components/players/PlayerGeneralStats.vue';
-import PlayerDisciplinaryStats from '@/components/players/PlayerDisciplinaryStats.vue';
+  import PlayerHeader from '@/components/players/PlayerHeader.vue';
+  import PlayerGeneralStats from '@/components/players/PlayerGeneralStats.vue';
+  import PlayerDisciplinaryStats from '@/components/players/PlayerDisciplinaryStats.vue';
 
-const route = useRoute();
-const player = ref(null);
-const team = ref(null);
-const loading = ref(true);
+  const route = useRoute();
+  const player = ref(null);
+  const team = ref(null);
+  const loading = ref(true);
 
-const generalStats = ref({
-  played: 0,
-  minutes: 0,
-  goals: 0,
-  assists: 0
-});
+  const generalStats = ref({
+    played: 0,
+    minutes: 0,
+    goals: 0,
+    assists: 0
+  });
 
-const disciplinaryStats = ref({
-  yellow: 0,
-  red: 0
-});
+  const disciplinaryStats = ref({
+    yellow: 0,
+    red: 0
+  });
 
-onMounted(async () => {
-  try {
-    const playerId = route.params.id;
-    
-    // Carico i dati dell'atleta
-    const playerData = await playerService.getPlayerById(playerId);
-    player.value = playerData;
-
-    // Se l'atleta esiste, carico Team e Statistiche in parallelo
-    if (playerData) {
-      const teamId = typeof playerData.currentTeam === 'object' 
-                     ? (playerData.currentTeam.teamId || playerData.currentTeam._id) 
-                     : playerData.currentTeam;
-
-      // Uso Promise.all per caricare tutto insieme velocemente
-      const [teamData, statsData, discData] = await Promise.all([
-        getTeamById(teamId),
-        playerService.getPlayerStats(playerId),
-        playerService.getPlayerDisciplinary(playerId)
-      ]);
-
-      team.value = teamData;
+  onMounted(async () => {
+    try {
+      const playerId = route.params.id;
       
-      // Assegno le statistiche se i dati sono tornati correttamente
-      if (statsData) generalStats.value = statsData;
-      if (discData) disciplinaryStats.value = discData;
+      // Recupero i dati del giocatore
+      const playerData = await playerService.getPlayerById(playerId);
+      player.value = playerData;
+
+      // Se il giocatore esiste, recupero Team e Statistiche in parallelo
+      if (playerData) {
+        const teamId = typeof playerData.currentTeam === 'object' 
+                      ? (playerData.currentTeam.teamId || playerData.currentTeam._id) 
+                      : playerData.currentTeam;
+
+        // Uso Promise.all per caricare tutto insieme velocemente
+        const [teamData, statsData, discData] = await Promise.all([
+          getTeamById(teamId),
+          playerService.getPlayerStats(playerId),
+          playerService.getPlayerDisciplinary(playerId)
+        ]);
+
+        team.value = teamData;
+        
+        // Assegno le statistiche recuperate
+        if (statsData) generalStats.value = statsData;
+        if (discData) disciplinaryStats.value = discData;
+      }
+    } catch (error) {
+      console.error("Errore nel caricamento del dettaglio giocatore:", error);
+    } finally {
+      loading.value = false;
     }
-  } catch (error) {
-    console.error("Errore nel caricamento del dettaglio giocatore:", error);
-  } finally {
-    loading.value = false;
-  }
-});
+  });
 </script>
 
 <template>

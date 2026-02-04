@@ -24,6 +24,7 @@
         </tr>
       </thead>
       <tbody>
+        <!-- Ciclo le squadre -->
         <ClubStatsRow 
           v-for="(club, index) in clubs" 
           :key="club.teamId || club._id" 

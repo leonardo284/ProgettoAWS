@@ -1,49 +1,50 @@
 <script setup>
-import { computed } from 'vue';
-import { Doughnut } from 'vue-chartjs';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+  import { computed } from 'vue';
+  import { Doughnut } from 'vue-chartjs';
+  import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+  // registra gli elementi del grafico che i servono
+  ChartJS.register(ArcElement, Tooltip, Legend);
 
-const props = defineProps({
-  stats: {
-    type: Object,
-    required: true,
-  }
-});
-
-
-const colors = {
-  won: '#00D2FF',   // Azzurro Ciano brillante
-  drawn: '#7A9CC6', // Blu Avio spento (grigiastro)
-  lost: '#001F3F'   // Blu Notte molto scuro
-};
-
-const chartData = computed(() => ({
-  datasets: [
-    {
-      // Ordine: Vinte (Azzurro), Pareggi (Grigio/Blu), Perse (Scuro)
-      backgroundColor: [colors.won, colors.drawn, colors.lost],
-      data: [props.stats.won, props.stats.drawn, props.stats.lost],
-      borderWidth: 0,
-      cutout: '80%',
-    },
-  ],
-}));
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: '#1a1a1a',
-      titleFont: { size: 14, weight: 'bold' },
-      padding: 12,
-      cornerRadius: 8
+  const props = defineProps({
+    stats: {
+      type: Object,
+      required: true,
     }
-  }
-};
+  });
+
+  const colors = {
+    won: '#00D2FF',   // Azzurro Ciano brillante
+    drawn: '#7A9CC6', // Blu Avio spento (grigiastro)
+    lost: '#001F3F'   // Blu Notte molto scuro
+  };
+
+  // dati del grafico
+  const chartData = computed(() => ({
+    datasets: [
+      {
+        backgroundColor: [colors.won, colors.drawn, colors.lost],
+        data: [props.stats.won, props.stats.drawn, props.stats.lost],
+        borderWidth: 0,
+        cutout: '80%',    // grandezza del foro centrale in percentuale rispetto al diametro
+      },
+    ],
+  }));
+
+  // impostazioni del grafico
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a1a',
+        titleFont: { size: 14, weight: 'bold' },
+        padding: 12,
+        cornerRadius: 8
+      }
+    }
+  };
 </script>
 
 <template>
@@ -81,83 +82,83 @@ const chartOptions = {
 </template>
 
 <style scoped>
-.stats-card {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-  max-width: 450px;
-  border: 1px solid #f0f0f0;
-}
+  .stats-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    max-width: 450px;
+    border: 1px solid #f0f0f0;
+  }
 
-.stats-title {
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: #001f3f;
-}
+  .stats-title {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #001f3f;
+  }
 
-.content-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-}
+  .content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+  }
 
-.chart-container {
-  position: relative;
-  width: 160px;
-  height: 160px;
-}
+  .chart-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+  }
 
-.chart-center-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
+  .chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
 
-.big-number {
-  display: block;
-  font-size: 2.2rem;
-  font-weight: 900;
-  line-height: 1;
-  color: #1a1a1a;
-}
+  .big-number {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #1a1a1a;
+  }
 
-.label {
-  font-size: 0.75rem;
-  color: #999;
-  font-weight: 700;
-  text-transform: uppercase;
-}
+  .label {
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
 
-.custom-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+  .custom-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
 
-.legend-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-}
+  .legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+  }
 
-.val { font-size: 1.1rem; font-weight: 900; width: 25px; text-align: right; }
-.txt { font-size: 0.8rem; color: #666; width: 75px; font-weight: 700; }
+  .val { font-size: 1.1rem; font-weight: 900; width: 25px; text-align: right; }
+  .txt { font-size: 0.8rem; color: #666; width: 75px; font-weight: 700; }
 
-.bar {
-  width: 45px;
-  height: 10px;
-  border-radius: 5px;
-}
+  .bar {
+    width: 45px;
+    height: 10px;
+    border-radius: 5px;
+  }
 
 
-.bg-won { background-color: #00D2FF; }   /* Azzurro vivo */
-.bg-drawn { background-color: #7A9CC6; } /* Blu Grigio */
-.bg-lost { background-color: #001F3F; }  /* Blu Notte */
+  .bg-won { background-color: #00D2FF; }   /* Azzurro vivo */
+  .bg-drawn { background-color: #7A9CC6; } /* Blu Grigio */
+  .bg-lost { background-color: #001F3F; }  /* Blu Notte */
 </style>

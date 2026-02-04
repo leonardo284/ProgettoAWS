@@ -1,10 +1,12 @@
 <script setup>
     import { ref, computed } from 'vue';
+    
     import Navbar from '@/components/layout/AppNavbar.vue';
     import Footer from '@/components/layout/AppFooter.vue';
     import ClubStatsTab from '@/components/stats/tabs/ClubStatsTab.vue';
     import PlayersStatsTab from '@/components/stats/tabs/PlayersStatsTab.vue';
 
+    // Stato per il tab attivo (club o players)
     const activeMainTab = ref('club');
 
     // Spostiamo la linea blu in base al tab attivo (0% o 100%)

@@ -6,6 +6,7 @@
     team: { type: Object, default: null }
   });
 
+  // calcolo l'età del giocatore
   const playerAge = computed(() => {
     if (!props.player.dataNascita) return 'N/D';
     const birth = new Date(props.player.dataNascita);
@@ -14,13 +15,11 @@
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   });
 
-  // Usiamo il LOGO invece del banner
+  // recupero il logo della squadra, se disponibile
   const teamLogo = computed(() => props.team?.logo || '');
 
-  // Variabili CSS per il colore del team
-  const headerStyle = computed(() => ({
-    '--team-color': props.team?.colori?.[0] || '#0a192f'
-  }));
+  // stile CSS in base al colore del team
+  const headerStyle = computed(() => ({ '--team-color': props.team?.colori?.[0] || '#0a192f'}));
 </script>
 
 <template>

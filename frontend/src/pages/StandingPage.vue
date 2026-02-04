@@ -1,29 +1,32 @@
 <script setup>
-import StandingsTable from '@/components/standings/StandingsTable.vue'
-import { ref, onMounted } from 'vue'
-import { getStandings } from '@/services/standingsService'
-import { getTeams } from '@/services/teamsService' 
-import AppNavbar from '@/components/layout/AppNavbar.vue'
-import AppFooter from '@/components/layout/AppFooter.vue'
+  import StandingsTable from '@/components/standings/StandingsTable.vue'
+  import { ref, onMounted } from 'vue'
+  import { getStandings } from '@/services/standingsService'
+  import { getTeams } from '@/services/teamsService' 
+  import AppNavbar from '@/components/layout/AppNavbar.vue'
+  import AppFooter from '@/components/layout/AppFooter.vue'
 
-const standings = ref([])
+  const standings = ref([])
 
-onMounted(async () => {
-  const [standingsData, teamsData] = await Promise.all([
-    getStandings(),
-    getTeams()
-  ])
+  onMounted(async () => {
+    // recupero sia la classifica che le informazioni delle squadre
+    const [standingsData, teamsData] = await Promise.all([
+      getStandings(),
+      getTeams()
+    ])
 
-  standings.value = standingsData.map((row, index) => { 
-    const teamInfo = teamsData.find(t => t.teamId === row.teamId)
-    return {
-      ...row, // Qui viene passato l'array 'form' calcolato dal backend
-      realPosition: index + 1, 
-      logo: teamInfo?.logo || '', 
-      nome: teamInfo?.nome || row.nome 
-    }
+    standings.value = standingsData.map((row, index) => { 
+      // recupero le informazioni della squadra corrispondente
+      const teamInfo = teamsData.find(t => t.teamId === row.teamId)
+      // ritorno la riga della classifica arricchita con logo e nome della squadra
+      return {
+        ...row, 
+        realPosition: index + 1, 
+        logo: teamInfo?.logo || '', 
+        nome: teamInfo?.nome || row.nome 
+      }
+    })
   })
-})
 </script>
 
 <template>
@@ -36,6 +39,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.container { padding: 20px; background-color: #f8f9fa; min-height: 100vh; }
-.page-title { margin-bottom: 20px; font-weight: 800; color: #1a1a1a; }
+  .container { padding: 20px; background-color: #f8f9fa; min-height: 100vh; }
+  .page-title { margin-bottom: 20px; font-weight: 800; color: #1a1a1a; }
 </style>

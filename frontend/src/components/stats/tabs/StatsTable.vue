@@ -6,6 +6,7 @@
     statType: { type: String, required: true }
   });
 
+  // Funzione per ottenere l'etichetta della colonna in base al tipo di statistica
   const getColumnLabel = () => {
     const labels = {
       'gol': 'GOL',
@@ -16,6 +17,7 @@
     return labels[props.statType] || 'TOTALE';
   };
 
+  // Funzione per ottenere il valore della statistica in base al tipo
   const getStatValue = (p) => {
     if (!p.stats) return 0;
     switch (props.statType) {
@@ -38,6 +40,7 @@
       </tr>
     </thead>
     <tbody>
+      <!-- Ciclo i dati dei giocatori -->
       <tr v-for="(p, index) in data" :key="p._id || index">
         <td class="rank-cell">{{ index + 1 }}</td>
         <td class="player-cell">

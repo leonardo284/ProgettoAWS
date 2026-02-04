@@ -5,18 +5,22 @@
     match: { type: Object, required: true }
   });
 
+  // variabile che indica se la partita è in corso
   const isLive = computed(() => {
     return props.match.stato === 'IN_CORSO_PRIMO_TEMPO' || props.match.stato === 'IN_CORSO_SECONDO_TEMPO';
   });
 
+  // Funzione per ottenere il nome del giocatore dato l'ID e la squadra
   const getPlayerName = (playerId, teamKey) => {
     if (!props.match?.squadre?.[teamKey]?.formazione) return '...';
     const team = props.match.squadre[teamKey];
+    // creo un array unico con titolari e panchina per cercare il giocatore
     const allPlayers = [...team.formazione.titolari, ...team.formazione.panchina];
     const player = allPlayers.find(p => p.playerId === playerId);
     return player ? player.nome : 'Giocatore';
   };
 
+  // Funzione per ottenere la lista dei goal segnati da una squadra
   const getGoals = (teamId) => {
     if (!props.match?.eventi) return [];
     return props.match.eventi.filter(e => e.tipo === "GOAL" && e.squadraId === teamId);
@@ -60,11 +64,13 @@
 
     <div class="scorers-footer">
       <div class="scorers-column home">
+        <!-- lista dei goal segnatidalla squadra di casa -->
         <div v-for="goal in getGoals(match.squadre.casa.teamId)" :key="goal._id" class="goal-item">
           {{ getPlayerName(goal.playerId, 'casa') }} {{ goal.minuto }}' ⚽
         </div>
       </div>
       <div class="scorers-column away">
+        <!-- lista dei goal segnatidalla squadra in trasferta -->
         <div v-for="goal in getGoals(match.squadre.trasferta.teamId)" :key="goal._id" class="goal-item">
           ⚽ {{ getPlayerName(goal.playerId, 'trasferta') }} {{ goal.minuto }}'
         </div>

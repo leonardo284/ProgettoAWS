@@ -1,17 +1,17 @@
 <script setup>
-import StandingsRow from "./StandingsRow.vue";
+  import StandingsRow from "./StandingsRow.vue";
 
-const props = defineProps({
-  standings: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  highlightTeamId: {
-    type: [String, Number],
-    default: null
-  }
-});
+  const props = defineProps({
+    standings: {
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    highlightTeamId: {
+      type: [String, Number],
+      default: null
+    }
+  });
 </script>
 
 <template>
@@ -44,9 +44,8 @@ const props = defineProps({
     </table>
   </div>
 </template>
-<style scoped>
 
-  /* Il selettore :deep() è necessario perché StandingsRow è un componente figlio */
+<style scoped>
   :deep(.highlighted-row) {
     background-color: rgba(0, 210, 255, 0.25) !important; 
     /* Bordo laterale scuro per dare profondità */
@@ -60,7 +59,7 @@ const props = defineProps({
   }
 
   .highlighted-row {
-    background-color: #00f2ff33 !important; /* Colore evidenziatore (azzurrino dell'Inter in foto) */
+    background-color: #00f2ff33 !important;
     font-weight: bold;
   }
 

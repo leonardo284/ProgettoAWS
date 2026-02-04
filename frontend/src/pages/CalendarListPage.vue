@@ -11,15 +11,19 @@
   const groupedMatches = ref({})
   const loading = ref(true)
 
+  // Funzione per caricare i dati delle partite in base alla giornata passata
   const loadData = async (day) => {
     loading.value = true
     currentDay.value = day
+    // Recupero le partite per la giornata specificata
     const data = await getMatchesByGiornata(day)
+    // Raggruppo le partite per data
     groupedMatches.value = groupMatchesByDate(data)
     loading.value = false
   }
 
   onMounted(async () => {
+    // recupero la giornata corrente
     const day = await utilityService.getCurrentMatchday()
     await loadData(day)
   })
@@ -42,7 +46,7 @@
 
       <!--Quando la pagina viene caricata per la prima volta, l'oggetto groupedMatches è inizialmente
        vuoto, senza l'if, Vue proverebbe a ciclare su un oggetto vuoto o non ancora popolato dal 
-       service, perquesto uso loading-->
+       service, per questo uso loading-->
       <div v-if="!loading" class="calendar-content">
         <div v-for="(matches, date) in groupedMatches" :key="date" class="date-group">
           <div class="date-header-wrapper">

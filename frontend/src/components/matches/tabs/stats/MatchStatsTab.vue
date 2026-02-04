@@ -1,27 +1,30 @@
 <script setup>
-import { computed } from 'vue';
-import StatRow from './StatRow.vue';
+  import { computed } from 'vue';
+  import StatRow from './StatRow.vue';
 
-const props = defineProps({
-  match: { type: Object, required: true }
-});
+  const props = defineProps({
+    match: { type: Object, required: true }
+  });
 
-const getStat = (tipo, teamId) => {
-  if (!props.match?.eventi) return 0;
-  return props.match.eventi.filter(e => e.tipo === tipo && e.squadraId === teamId).length;
-};
-
-const stats = computed(() => {
-  const hId = props.match.squadre.casa.teamId;
-  const aId = props.match.squadre.trasferta.teamId;
-  return {
-    falli: { h: getStat('FALLO', hId), a: getStat('FALLO', aId) },
-    gialli: { h: getStat('AMMONIZIONE', hId), a: getStat('AMMONIZIONE', aId) },
-    rossi: { h: getStat('ESPULSIONE', hId), a: getStat('ESPULSIONE', aId) },
-    angoli: { h: getStat('ANGOLO', hId), a: getStat('ANGOLO', aId) },
-    rigori: { h: getStat('RIGORE', hId), a: getStat('RIGORE', aId) }
+  // Funzione per calcolare le statistiche della partita
+  const getStat = (tipo, teamId) => {
+    if (!props.match?.eventi) return 0;
+    // Filtra gli eventi per tipo e squadra, e restituisce il conto di quanti ce ne sono
+    return props.match.eventi.filter(e => e.tipo === tipo && e.squadraId === teamId).length;
   };
-});
+
+  // calcolo delle statistiche per entrambe le squadre
+  const stats = computed(() => {
+    const hId = props.match.squadre.casa.teamId;      // home team ID
+    const aId = props.match.squadre.trasferta.teamId; // away team ID
+    return {
+      falli: { h: getStat('FALLO', hId), a: getStat('FALLO', aId) },
+      gialli: { h: getStat('AMMONIZIONE', hId), a: getStat('AMMONIZIONE', aId) },
+      rossi: { h: getStat('ESPULSIONE', hId), a: getStat('ESPULSIONE', aId) },
+      angoli: { h: getStat('ANGOLO', hId), a: getStat('ANGOLO', aId) },
+      rigori: { h: getStat('RIGORE', hId), a: getStat('RIGORE', aId) }
+    };
+  });
 </script>
 
 <template>
@@ -37,6 +40,6 @@ const stats = computed(() => {
 </template>
 
 <style scoped>
-.stats-wrapper { padding: 30px; background: #fff; }
-.stats-list { max-width: 600px; margin: 0 auto; }
+  .stats-wrapper { padding: 30px; background: #fff; }
+  .stats-list { max-width: 600px; margin: 0 auto; }
 </style>

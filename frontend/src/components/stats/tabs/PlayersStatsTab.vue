@@ -3,6 +3,7 @@
   import StatsTable from '@/components/stats/tabs/StatsTable.vue';
   import statsService from '@/services/statsService';
 
+  // Stato per il tab secondario attivo (gol, assist, ecc.)
   const activeSubTab = ref('gol');
   const leaderboard = ref([]);
   const loading = ref(false);
@@ -14,6 +15,7 @@
     { id: 'red', label: 'Espulsioni' }
   ];
 
+  // funzione per caricare i dati in base al tab secondario attivo
   const loadData = async () => {
     loading.value = true;
     try {
@@ -29,12 +31,14 @@
   };
 
   onMounted(loadData);
+  // Ricarica i dati quando il tab secondario cambia
   watch(activeSubTab, loadData);
 </script>
 <template>
   <div class="players-tab">
     <div class="sub-nav-wrapper">
       <div class="sub-nav">
+        <!-- Ciclo i tabs secondari -->
         <button 
           v-for="t in tabs" :key="t.id"
           :class="['pill-btn', { active: activeSubTab === t.id }]"

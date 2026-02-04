@@ -1,5 +1,6 @@
 <script setup>
   import { ref } from 'vue';
+  // Componenti
   import MatchTimelineTab from '@/components/matches/tabs/timeline/MatchTimelineTab.vue';
   import MatchLineupsTab from '@/components/matches/tabs/lineups/MatchLineupsTab.vue';
   import MatchStatsTab from '@/components/matches/tabs/stats/MatchStatsTab.vue';
@@ -8,8 +9,9 @@
     match: { type: Object, required: true }
   });
 
+  // Stato del tab attivo
   const activeTab = ref('CRONACA');
-  const tabs = ['CRONACA', 'FORMAZIONI', 'STATISTICHE'];
+  const tabs = ['CRONACA', 'FORMAZIONI', 'STATISTICHE']; // Nomi dei tab
 </script>
 
 <template>

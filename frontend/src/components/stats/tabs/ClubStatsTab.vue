@@ -1,18 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import statsService from '@/services/statsService';
-import ClubStatsTable from '@/components/stats/tabs/ClubStatsTable.vue';
+  import { ref, onMounted } from 'vue';
+  import statsService from '@/services/statsService';
+  import ClubStatsTable from '@/components/stats/tabs/ClubStatsTable.vue';
 
-const clubs = ref([]);
-const loading = ref(true);
+  const clubs = ref([]);
+  const loading = ref(true);
 
-onMounted(async () => {
-  try {
-    clubs.value = await statsService.getClubRankings();
-  } finally {
-    loading.value = false;
-  }
-});
+  onMounted(async () => {
+    try {
+      // recupero le statistiche dei club
+      clubs.value = await statsService.getClubRankings();
+    } finally {
+      loading.value = false;
+    }
+  });
 </script>
 
 <template>

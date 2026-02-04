@@ -1,18 +1,18 @@
 <script setup>
-const props = defineProps({
-  match: {
-    type: Object,
-    required: true
-  }
-})
+  const props = defineProps({
+    match: {
+      type: Object,
+      required: true
+    }
+  })
 
-// Formattazione: GIORNO MESE ANNO (es: 24 MAG 2025)
-const formatDate = (dateTimeStr) => {
-  if (!dateTimeStr) return '';
-  const date = new Date(dateTimeStr);
-  const options = { day: '2-digit', month: 'short', year: 'numeric' };
-  return date.toLocaleDateString('it-IT', options).toUpperCase();
-}
+  // Formattazione: GIORNO MESE ANNO (es: 24 MAG 2025)
+  const formatDate = (dateTimeStr) => {
+    if (!dateTimeStr) return '';
+    const date = new Date(dateTimeStr);
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('it-IT', options).toUpperCase();
+  }
 </script>
 
 <template>
@@ -47,76 +47,76 @@ const formatDate = (dateTimeStr) => {
 </template>
 
 <style scoped>
-.match-link {
-  text-decoration: none; 
-  color: inherit;
-  flex: 0 0 280px; /* Larghezza card */
-}
+  .match-link {
+    text-decoration: none; 
+    color: inherit;
+    flex: 0 0 280px; /* Larghezza card */
+  }
 
-.match-card {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #eef0f2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-}
+  .match-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    border: 1px solid #eef0f2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+  }
 
-/* Effetto hover per feedback al click */
-.match-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-  border-color: #003366;
-}
+  /* Effetto hover per feedback al click */
+  .match-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    border-color: #003366;
+  }
 
-.match-header {
-  text-align: center;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
+  .match-header {
+    text-align: center;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+  }
 
-.header-text {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #003366;
-  letter-spacing: 0.5px;
-}
+  .header-text {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #003366;
+    letter-spacing: 0.5px;
+  }
 
-.teams-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+  .teams-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.team-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .team-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.team-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .team-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.team-logo {
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-}
+  .team-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+  }
 
-.team-name {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: #222;
-}
+  .team-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #222;
+  }
 
-.score {
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: #000;
-}
+  .score {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #000;
+  }
 </style>

@@ -1,16 +1,17 @@
 <script setup>
-import { computed } from 'vue';
-import ScorerRow from './ScorerRow.vue';
+  import { computed } from 'vue';
+  import ScorerRow from './ScorerRow.vue';
 
-const props = defineProps({
-  players: { type: Array, default: () => [] }
-});
+  const props = defineProps({
+    players: { type: Array, default: () => [] }  // riceve la lista dei marcatori
+  });
 
-const topScorers = computed(() => {
-  return [...props.players]
-    .filter(p => p.goals > 0)
-    .sort((a, b) => b.goals - a.goals);
-});
+  // calcolo i marcatori ordinati per gol segnati
+  const topScorers = computed(() => {
+    return [...props.players]
+      .filter(p => p.goals > 0)
+      .sort((a, b) => b.goals - a.goals);
+  });
 </script>
 
 <template>
@@ -45,48 +46,48 @@ const topScorers = computed(() => {
 </template>
 
 <style scoped>
-.scorers-card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
-  margin-top: 25px;
-}
+  .scorers-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    margin-top: 25px;
+  }
 
-.card-header {
-  padding: 20px;
-}
+  .card-header {
+    padding: 20px;
+  }
 
-.card-header h3 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #001f3f;
-  text-transform: uppercase;
-}
+  .card-header h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #001f3f;
+    text-transform: uppercase;
+  }
 
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background: #f8f9fa;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-}
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+  }
 
-.col-label {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #aaa;
-  letter-spacing: 1px;
-}
+  .col-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #aaa;
+    letter-spacing: 1px;
+  }
 
-.header-left { display: flex; }
-.player-label { margin-left: 45px; }
-.header-right { width: 60px; text-align: center; }
+  .header-left { display: flex; }
+  .player-label { margin-left: 45px; }
+  .header-right { width: 60px; text-align: center; }
 
-.no-data {
-  padding: 40px;
-  text-align: center;
-  color: #999;
-}
+  .no-data {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+  }
 </style>

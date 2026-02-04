@@ -3,14 +3,16 @@
 
   const props = defineProps({
     player: { type: Object, required: true },
-    side: { type: String, default: 'home' },
+    side: { type: String, default: 'home' },  // 'home' o 'away' (per capire da che parte mostrare le icone)
     events: { type: Array, default: () => [] },
     isSub: { type: Boolean, default: false },
     entered: { type: Boolean, default: false }
   });
 
+  // Mappa per convertire i ruoli abbreviati in nomi completi
   const roleMap = { 'P': 'Portiere', 'D': 'Difensore', 'C': 'Centrocampista', 'A': 'Attaccante' };
 
+  // Funzioni per verificare la presenza di eventi specifici per il giocatore
   const hasExited = () => !props.isSub && props.events?.some(e => e.tipo === 'SOSTITUZIONE' && e.playerOutId === props.player.playerId);
   const hasYellow = () => props.events?.some(e => e.playerId === props.player.playerId && e.tipo === 'AMMONIZIONE');
   const hasRed = () => props.events?.some(e => e.playerId === props.player.playerId && e.tipo === 'ESPULSIONE');
@@ -19,6 +21,9 @@
 <template>
   <div class="player-lineup-row" :class="[side]" v-if="player">
     
+    <!-- Struttura differente per casa e trasferta per posizionare le icone correttamente -->
+
+    <!-- Se è la squadra di casa, foto a sinistra e icone a destra -->
     <template v-if="side === 'home'">
       <div class="player-main">
         <img :src="player.foto || placeholderImg" class="player-img" />
@@ -26,6 +31,7 @@
           <span class="name">{{ player.nome }}</span>
           <span class="full-role">{{ roleMap[player.ruolo] || player.ruolo }}</span>
         </div>
+        <!-- Icone degli eventi (cartellini, sostituzioni) -->
         <div class="event-icons">
           <span v-if="hasYellow()" class="card yellow"></span>
           <span v-if="hasRed()" class="card red"></span>
@@ -35,9 +41,11 @@
       </div>
     </template>
 
+    <!-- Se la squadra è di trasferta, foto a destra e icone a sinistra -->
     <template v-else>
       <div class="player-main">
         <div class="event-icons">
+          <!-- Icone degli eventi (cartellini, sostituzioni) -->
           <span v-if="hasExited()" class="arrow out">↓</span>
           <span v-if="entered" class="arrow in">↑</span>
           <span v-if="hasRed()" class="card red"></span>

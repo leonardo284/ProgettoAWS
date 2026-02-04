@@ -7,6 +7,9 @@
     match: Object
   });
 
+  // Dichiaro eventi emessi:
+  // close -> evento emesso per chiudere il modal
+  // refreshMatch -> evento emesso per ricaricare i dati della partita
   const emit = defineEmits(['close', 'refreshMatch']);
 
   // --- STATO DEL FORM ---
@@ -17,17 +20,20 @@
   const inPlayerId = ref('');       
   const minute = ref(0);
 
+  // Tipi di eventi disponibili
   const eventTypes = ["GOAL", "AMMONIZIONE", "ESPULSIONE", "RIGORE", "ANGOLO", "SOSTITUZIONE", "FALLO"];
 
   // --- LOGICA DI FILTRAGGIO DINAMICO ---
 
+  // Squadra di casa e trasferta
   const homeTeam = computed(() => props.match?.squadre?.casa);
   const awayTeam = computed(() => props.match?.squadre?.trasferta);
+  // Squadra selezionata
   const selectedTeam = computed(() => 
     selectedTeamId.value === homeTeam.value?.teamId ? homeTeam.value : awayTeam.value
   );
 
-  // 1. Identifica chi ha lasciato il campo (per sostituzione o espulsione)
+  // Array con giocatori che hanno lasciato il campo (per sostituzione o espulsione)
   const playersOffField = computed(() => {
     const off = new Set();
     props.match?.eventi?.forEach(e => {
@@ -37,7 +43,7 @@
     return off;
   });
 
-  // 2. Identifica chi è già entrato dalla panchina
+  // Array con giocatori entrati dalla panchina per la
   const playersAlreadyEntered = computed(() => {
     const entered = new Set();
     props.match?.eventi?.forEach(e => {
@@ -46,7 +52,7 @@
     return entered;
   });
 
-  // 3. Conteggio sostituzioni per squadra
+  // variabile che conta il numero di sostituzioni già effettuate dalla squadra selezionata
   const substitutionsCount = computed(() => {
     if (!props.match?.eventi || !selectedTeamId.value) return 0;
     return props.match.eventi.filter(e => 
@@ -54,13 +60,15 @@
     ).length;
   });
 
+  // booleano che indica se la squadra selezionata ha ancora sostituzioni disponibili
   const hasSubstitutionsLeft = computed(() => substitutionsCount.value < 5);
 
-  // 4. Giocatori ATTUALMENTE IN CAMPO
+  // Array con giocatori della squadra selezionata attualmente in campo
   const playersCurrentlyOnField = computed(() => {
     if (!selectedTeam.value) return [];
-    const off = playersOffField.value;
-    const entered = playersAlreadyEntered.value;
+
+    const off = playersOffField.value;            // giocatori usciti
+    const entered = playersAlreadyEntered.value;  // giocatori entrati
 
     // Titolari ancora in campo
     const startersStillIn = (selectedTeam.value.formazione?.titolari || []).filter(p => !off.has(Number(p.playerId)));
@@ -68,19 +76,22 @@
     // Sostituti entrati in campo
     const subsInField = (selectedTeam.value.formazione?.panchina || []).filter(p => entered.has(Number(p.playerId)) && !off.has(Number(p.playerId)));
 
+    // restituisco l'unione dei due array
+    // ovvero i titolari ancora in campo + i sostituti entrati
     return [...startersStillIn, ...subsInField];
   });
 
-  // 5. Giocatori DISPONIBILI IN PANCHINA
+  // Array con i giocatori disponibili in panchina per la squadra selezionata
   const availableBench = computed(() => {
     if (!selectedTeam.value || !hasSubstitutionsLeft.value) return [];
-    const entered = playersAlreadyEntered.value;
 
+    const entered = playersAlreadyEntered.value;       // giocatori entrati
+
+    // restituisco i giocatori in panchina che non sono ancora entrati
     return (selectedTeam.value.formazione?.panchina || []).filter(p => !entered.has(Number(p.playerId)));
   });
 
-  // --- GESTIONE AZIONI ---
-
+  // Ogni volta che apro il modal, resetto i valori del form e imposto il minuto corrente della partita
   watch(() => props.isOpen, (newVal) => {
     if (newVal) {
       minute.value = props.match?.minutoCorrente || 0;
@@ -88,17 +99,25 @@
     }
   });
 
+  // --- LOGICA DI VALIDAZIONE E INVIO FORM ---
+  // booleano che indica se il form è valido per l'invio
   const isValid = computed(() => {
     if (!selectedTeamId.value || !selectedType.value) return false;
+
+    // per i tipi di evento che non richiedono un giocatore specifico, il form è valido 
+    // se la squadra e il tipo sono selezionati
     if (['ANGOLO', 'RIGORE', 'FALLO'].includes(selectedType.value)) return true;
     
+    // per le sostituzioni, devono essere selezionati sia il giocatore che esce che quello che entra
     if (selectedType.value === 'SOSTITUZIONE') {
       return outPlayerId.value && inPlayerId.value && hasSubstitutionsLeft.value;
     }
     
+    // per gli altri tipi di evento, deve essere selezionato un giocatore in campo
     return selectedPlayerId.value !== '';
   });
 
+  // funzione per resettare il form
   const resetForm = () => {
     selectedTeamId.value = null;
     selectedType.value = null;
@@ -107,14 +126,19 @@
     inPlayerId.value = '';
   };
 
+  // funzione per registrare l'evento
   const handleRegisterEvent = async () => {
     try {
+      // calcolo il payload da inviare al backend
       const payload = {
         squadraId: selectedTeamId.value,
         tipo: selectedType.value,
         minuto: minute.value,
       };
 
+      // Aggiungo al payload i campi specifici a seconda del tipo di evento
+      // playerId deve essere presente per tutti i tipi tranne ANGOLO, RIGORE, FALLO
+      // in caso di SOSTITUZIONE aggiungo sia playerId (chi entra) che playerOutId (chi esce)
       if (selectedType.value === 'SOSTITUZIONE') {
         payload.playerId = inPlayerId.value; 
         payload.playerOutId = outPlayerId.value;
@@ -122,7 +146,10 @@
         payload.playerId = selectedPlayerId.value;
       }
 
+      // chiamo il service per aggiungere l'evento live
       await matchesService.addLiveEvent(props.match.matchId, payload);
+      
+      // emetto l'evento per ricaricare i dati della partita e per chiudere il modal
       emit('refreshMatch');
       emit('close');
     } catch (err) {
@@ -132,6 +159,8 @@
 </script>
 
 <template>
+  <!-- click.self perché così in modo che si chiuda solo se clicco al di fuori della modale, 
+      altrimenti emetterebbe l'evento close anche se cliccassi sulla modale -->
   <div v-if="isOpen" class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
@@ -139,6 +168,8 @@
         <button @click="$emit('close')" class="close-btn">&times;</button>
       </div>
       
+    <!-- SQUADRE -->
+
       <div class="modal-body">
         <div class="form-group">
           <label>Squadra</label>
@@ -154,6 +185,8 @@
           </div>
         </div>
 
+        <!--TIPOLOGIA DI EVENTO-->
+
         <div class="form-group">
           <label>Tipo di Evento</label>
           <div class="event-grid">
@@ -167,11 +200,15 @@
           </div>
         </div>
 
+        
+
         <div v-if="selectedType === 'SOSTITUZIONE' && selectedTeamId" class="sub-container">
+          <!-- Mostro numero sostituzioni effettuate in caso l'evento selezionato è la sostituzione -->
           <div class="sub-limit-info" :class="{ 'danger': !hasSubstitutionsLeft }">
             Sostituzioni effettuate: {{ substitutionsCount }} / 5
           </div>
 
+          <!-- Se ci sono sostituzioni disponibili, mostro i selettori per giocatore che esce/entra -->
           <template v-if="hasSubstitutionsLeft">
             <div class="form-group">
               <label>Esce</label>
@@ -195,6 +232,7 @@
           <p v-else class="limit-msg">Limite sostituzioni raggiunto per questa squadra.</p>
         </div>
 
+        <!-- Giocatore coinvolto nell'evento (se richiesto) -->
         <div v-else-if="selectedType && !['RIGORE', 'ANGOLO', 'FALLO'].includes(selectedType)" class="form-group">
           <label>Giocatore (In campo)</label>
           <select v-model="selectedPlayerId" class="select-input" :disabled="!selectedTeamId">
@@ -204,6 +242,8 @@
             </option>
           </select>
         </div>
+
+        <!-- Minuto effettivo -->
 
         <div class="form-group">
           <label>Minuto Effettivo</label>

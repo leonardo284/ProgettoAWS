@@ -6,6 +6,7 @@
   const matches = ref([])
 
   onMounted(async () => {
+    // Recupero le ultime partite
     const data = await getLastMatches()
     // Raddoppio l'array per creare l'effetto loop infinito senza interruzioni
     matches.value = [...data, ...data]
@@ -29,47 +30,47 @@
 </template>
 
 <style scoped>
-.last-matches-section {
-  padding: 20px 0;
-  background-color: #f8f9fa;
-  overflow: hidden; 
-  border-bottom: 1px solid #ddd;
-}
-
-.carousel-container {
-  position: relative;
-  width: 100%;
-}
-
-.ticker-wrapper {
-  display: flex;
-  width: fit-content;
-}
-
-.ticker-content {
-  display: flex;
-  gap: 16px;
-  padding: 10px 0;
-  /* L'animazione: dura 40 secondi, lineare, infinita */
-  animation: ticker 40s linear infinite;
-}
-
-/* Quando l'utente passa il mouse, il movimento si ferma per permettere il click */
-.ticker-content:hover {
-  animation-play-state: paused;
-}
-
-@keyframes ticker {
-  0% {
-    transform: translateX(0);
+  .last-matches-section {
+    padding: 20px 0;
+    background-color: #f8f9fa;
+    overflow: hidden; 
+    border-bottom: 1px solid #ddd;
   }
-  100% {
-    /* Si sposta esattamente della metà */
-    transform: translateX(-50%);
-  }
-}
 
-:deep(.match-link) {
-  flex: 0 0 280px;
-}
+  .carousel-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .ticker-wrapper {
+    display: flex;
+    width: fit-content;
+  }
+
+  .ticker-content {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    /* L'animazione: dura 40 secondi, lineare, infinita */
+    animation: ticker 40s linear infinite; /* attivo l'animazione richimando il keyframes */
+  }
+
+  /* Quando l'utente passa il mouse, il movimento si ferma per permettere il click */
+  .ticker-content:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes ticker {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      /* Si sposta esattamente della metà (perché ho raddoppiato la lista delle partite) */
+      transform: translateX(-50%);
+    }
+  }
+
+  :deep(.match-link) {
+    flex: 0 0 280px;
+  }
 </style>
