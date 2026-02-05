@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const PlayerSnapshotSchema = new mongoose.Schema({
   playerId: Number,
   nome: String,
+  cognome: String,
   ruolo: String
 }, { _id: false });
 

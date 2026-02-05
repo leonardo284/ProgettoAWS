@@ -48,7 +48,7 @@ const team = computed(() =>
       <div class="player-entry">
         <div class="player-data">
           <span class="status-tag in">ENTRA</span>
-          <span class="name">{{ playerIn?.nome || 'Sconosciuto' }}</span>
+          <span class="name">{{ playerIn?.nome }} {{ playerIn?.cognome || '' }}</span>
           <div class="team-info">
             <img :src="team?.logo" class="team-logo-inline" v-if="team?.logo" />
             <span class="team-details">{{ team?.nome }} · {{ playerIn?.ruolo }}</span>
@@ -68,7 +68,7 @@ const team = computed(() =>
       <div class="player-entry">
         <div class="player-data">
           <span class="status-tag out">ESCE</span>
-          <span class="name">{{ playerOut?.nome || 'Sconosciuto' }}</span>
+          <span class="name">{{ playerOut.nome }} {{ playerOut.cognome || '' }}</span>
           <div class="team-info">
             <img :src="team?.logo" class="team-logo-inline" v-if="team?.logo" />
             <span class="team-details">{{ team?.nome }} · {{ playerOut?.ruolo }}</span>

@@ -19,7 +19,7 @@
   };
 
   const scorer = computed(() => getPlayerData(props.event.playerId));
-  const assistman = computed(() => getPlayerData(props.event.assistId));
+  const assistman = computed(() => getPlayerData(props.event.assistPlayerId));
 
   const team = computed(() => 
     props.event.squadraId === props.match.squadre.casa.teamId 
@@ -43,7 +43,7 @@
 
       <div class="card-body-inner">
         <div class="player-details">
-          <div class="player-name">{{ scorer.nome }}</div>
+          <div class="player-name">{{ scorer.nome }} {{ scorer.cognome || '' }}</div>
           
           <div class="team-info">
             <img :src="team.logo" class="team-logo-inline" v-if="team.logo" />
@@ -51,7 +51,7 @@
           </div>
 
           <div v-if="assistman" class="assist-info">
-            Assist: <strong>{{ assistman.nome }}</strong>
+            Assist: <strong>{{ assistman.nome }} {{ assistman.cognome || '' }}</strong>
           </div>
         </div>
 

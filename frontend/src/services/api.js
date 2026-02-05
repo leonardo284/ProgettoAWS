@@ -8,8 +8,7 @@ const api = axios.create({
 })
 
 // INTERCEPTOR RICHIESTE: Inserisce il token in OGNI chiamata
-api.interceptors.request.use(
-  (config) => {
+api.interceptors.request.use( (config) => {
     const auth = useAuthStore()
     const token = auth.token // Prende il token dallo store Pinia
     

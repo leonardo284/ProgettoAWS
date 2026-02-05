@@ -45,7 +45,7 @@
 
       <div class="card-body-inner">
         <div class="player-details">
-          <div class="player-name">{{ player.nome }}</div>
+          <div class="player-name">{{ player.nome }} {{ player.cognome || '' }}</div>
           
           <div class="team-info">
             <img :src="team.logo" class="team-logo-inline" v-if="team.logo" />

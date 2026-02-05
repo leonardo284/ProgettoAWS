@@ -28,7 +28,7 @@
       <div class="player-main">
         <img :src="player.foto || placeholderImg" class="player-img" />
         <div class="player-info">
-          <span class="name">{{ player.nome }}</span>
+          <span class="name">{{ player.nome }} {{ player.cognome || '' }}</span>
           <span class="full-role">{{ roleMap[player.ruolo] || player.ruolo }}</span>
         </div>
         <!-- Icone degli eventi (cartellini, sostituzioni) -->
@@ -52,7 +52,7 @@
           <span v-if="hasYellow()" class="card yellow"></span>
         </div>
         <div class="player-info text-right">
-          <span class="name">{{ player.nome }}</span>
+          <span class="name">{{ player.nome }} {{ player.cognome || '' }}</span>
           <span class="full-role">{{ roleMap[player.ruolo] || player.ruolo }}</span>
         </div>
         <img :src="player.foto || placeholderImg" class="player-img" />

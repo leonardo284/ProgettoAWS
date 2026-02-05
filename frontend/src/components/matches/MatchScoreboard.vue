@@ -13,11 +13,18 @@
   // Funzione per ottenere il nome del giocatore dato l'ID e la squadra
   const getPlayerName = (playerId, teamKey) => {
     if (!props.match?.squadre?.[teamKey]?.formazione) return '...';
+    
     const team = props.match.squadre[teamKey];
-    // creo un array unico con titolari e panchina per cercare il giocatore
     const allPlayers = [...team.formazione.titolari, ...team.formazione.panchina];
+    
     const player = allPlayers.find(p => p.playerId === playerId);
-    return player ? player.nome : 'Giocatore';
+    
+    // Se trovo il giocatore restituisco nome e cognome
+    if (player) {
+      return `${player.nome} ${player.cognome || ''}`.trim();
+    }
+    
+    return 'Giocatore';
   };
 
   // Funzione per ottenere la lista dei goal segnati da una squadra

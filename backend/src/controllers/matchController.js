@@ -213,7 +213,7 @@ exports.addLiveEvent = async (req, res) => {
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
 
-    const { tipo, squadraId, playerId, playerOutId, minuto, dettaglio } = req.body;
+    const { tipo, squadraId, playerId, playerOutId, assistPlayerId, minuto, dettaglio } = req.body;
     
     const nuovoEvento = { 
       tipo,
@@ -221,7 +221,8 @@ exports.addLiveEvent = async (req, res) => {
       minuto: Math.min(minuto, 90),
       dettaglio,
       playerOutId: playerOutId ? Number(playerOutId) : null,
-      playerId: playerId ? Number(playerId) : null
+      playerId: playerId ? Number(playerId) : null,
+      assistPlayerId: assistPlayerId ? Number(assistPlayerId) : null
     };
 
     // --- EVENTO GOAL ---
@@ -321,16 +322,47 @@ const _internalUpdatePlayerStats = async (match) => {
       },      
       { upsert: true } // se non esiste il playerStats con quell'id lo crea
     );
+
+    // Se l'evento è un GOAL e c'è un assistman, incremento i suoi assist
+    if (evento.tipo === "GOAL" && evento.assistPlayerId) {
+      await PlayerStats.findOneAndUpdate(
+        { playerId: Number(evento.assistPlayerId) },    // where playerId = assistPlayerId
+        { 
+          $inc: { "stats.assist": 1 }, 
+          $set: { ultimaPartitaId: match.matchId, updatedAt: new Date() } 
+        },
+        { upsert: true }
+      );
+    }
+
   }
 
-  // prendo tutti i titolari dlle due squadre
-  const titolari = [
-    ...match.squadre.casa.formazione.titolari,
-    ...match.squadre.trasferta.formazione.titolari
+  // Prendo i titolari
+  const titolariIds = [
+    ...match.squadre.casa.formazione.titolari.map(p => ({ playerId: p.playerId, nome: p.nome })),
+    ...match.squadre.trasferta.formazione.titolari.map(p => ({ playerId: p.playerId, nome: p.nome }))
   ];
 
-  // per ogni titolare incremento la presenza
-  for (const p of titolari) {
+  // Estraggo i sostituti che sono entrati (playerId negli eventi di tipo SOSTITUZIONE)
+  const subentratiIds = [];
+  for (const evento of match.eventi) {
+    if (evento.tipo === "SOSTITUZIONE" && evento.playerId) {
+      // Cerco il nome del giocatore nella panchina per poterlo salvare nel set (utile in caso di upsert)
+      const pCasa = match.squadre.casa.formazione.panchina.find(p => p.playerId === evento.playerId);
+      const pTrasf = match.squadre.trasferta.formazione.panchina.find(p => p.playerId === evento.playerId);
+      const playerObj = pCasa || pTrasf;
+      
+      if (playerObj) {
+        subentratiIds.push({ playerId: playerObj.playerId, nome: playerObj.nome });
+      }
+    }
+  }
+
+  // Unisco le due liste (titolari + subentrati)
+  const tuttiIGiocatoriInCampo = [...titolariIds, ...subentratiIds];
+
+  // per ogni giocatore che ha giocato incremento la presenza
+  for (const p of tuttiIGiocatoriInCampo) {
     await PlayerStats.findOneAndUpdate(
       { playerId: Number(p.playerId) },
       { 

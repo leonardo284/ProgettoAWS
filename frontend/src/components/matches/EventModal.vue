@@ -19,6 +19,7 @@
   const outPlayerId = ref('');      
   const inPlayerId = ref('');       
   const minute = ref(0);
+  const assistPlayerId = ref('');
 
   // Tipi di eventi disponibili
   const eventTypes = ["GOAL", "AMMONIZIONE", "ESPULSIONE", "RIGORE", "ANGOLO", "SOSTITUZIONE", "FALLO"];
@@ -124,6 +125,7 @@
     selectedPlayerId.value = '';
     outPlayerId.value = '';
     inPlayerId.value = '';
+    assistPlayerId.value = '';
   };
 
   // funzione per registrare l'evento
@@ -144,6 +146,12 @@
         payload.playerOutId = outPlayerId.value;
       } else if (!['ANGOLO', 'RIGORE', 'FALLO'].includes(selectedType.value)) {
         payload.playerId = selectedPlayerId.value;
+      }
+
+
+      // nel caso di GOAL, se è presente anche un assist, aggiungo assistPlayerId al payload
+      if (selectedType.value === 'GOAL' && assistPlayerId.value) {
+        payload.assistPlayerId = Number(assistPlayerId.value);
       }
 
       // chiamo il service per aggiungere l'evento live
@@ -215,7 +223,7 @@
               <select v-model="outPlayerId" class="select-input">
                 <option value="" disabled>-- Seleziona --</option>
                 <option v-for="p in playersCurrentlyOnField" :key="p.playerId" :value="p.playerId">
-                  {{ p.nome }}
+                  {{ p.nome }} {{ p.cognome || '' }}
                 </option>
               </select>
             </div>
@@ -224,7 +232,7 @@
               <select v-model="inPlayerId" class="select-input">
                 <option value="" disabled>-- Seleziona --</option>
                 <option v-for="p in availableBench" :key="p.playerId" :value="p.playerId">
-                  {{ p.nome }}
+                  {{ p.nome }} {{ p.cognome || '' }}
                 </option>
               </select>
             </div>
@@ -238,7 +246,22 @@
           <select v-model="selectedPlayerId" class="select-input" :disabled="!selectedTeamId">
             <option value="" disabled>-- Seleziona Giocatore --</option>
             <option v-for="p in playersCurrentlyOnField" :key="p.playerId" :value="p.playerId">
-              {{ p.nome }}
+              {{ p.nome }} {{ p.cognome || '' }}
+            </option>
+          </select>
+        </div>
+
+
+        <div v-if="selectedType === 'GOAL' && selectedPlayerId" class="form-group assist-field">
+          <label>Assist di (Opzionale)</label>
+          <select v-model="assistPlayerId" class="select-input">
+            <option value="">-- Nessun assist --</option>
+            <option 
+              v-for="p in playersCurrentlyOnField.filter(p => p.playerId !== selectedPlayerId)" 
+              :key="p.playerId" 
+              :value="p.playerId"
+            >
+              {{ p.nome }} {{ p.cognome || '' }}
             </option>
           </select>
         </div>
