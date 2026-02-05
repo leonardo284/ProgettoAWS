@@ -221,11 +221,11 @@ async function playInitialMatches(nGiornate) {
       const squadraData = match.squadre[squadraType];
       const idSquadra = squadraData.teamId;
       
-      // Recuperiamo i giocatori dal DB per avere l'anagrafica completa
+      // Recupero i giocatori dal DB per avere l'anagrafica completa
       const allPlayers = await Player.find({ "currentTeam.teamId": idSquadra });
       
       // Liste dinamiche per gestire le sostituzioni correttamente
-      // Usiamo gli ID degli snapshot della formazione salvata nel match
+      // Usio gli ID degli snapshot della formazione salvata nel match
       let inCampoIds = squadraData.formazione.titolari.map(p => p.playerId);
       let inPanchinaIds = squadraData.formazione.panchina.map(p => p.playerId);
 

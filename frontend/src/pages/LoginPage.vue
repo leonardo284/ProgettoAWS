@@ -1,32 +1,47 @@
 <script setup>
-import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { authService } from '@/services/authService'
-import { useRouter } from 'vue-router'
+  import { ref, onMounted } from 'vue'
+  import { useAuthStore } from '@/stores/auth'
+  import { authService } from '@/services/authService'
+  import { useRouter, useRoute } from 'vue-router' 
 
-import AppNavbar from '@/components/layout/AppNavbar.vue'
-import AppFooter from '@/components/layout/AppFooter.vue'
+  // Componenti layout
+  import AppNavbar from '@/components/layout/AppNavbar.vue'
+  import AppFooter from '@/components/layout/AppFooter.vue'
 
-const auth = useAuthStore()
-const router = useRouter()
+  const auth = useAuthStore()
+  const router = useRouter()
+  const route = useRoute()
 
-const username = ref('')
-const password = ref('')
-const errorMsg = ref('')
+  const username = ref('')
+  const password = ref('')
+  const errorMsg = ref('')
+  const infoMsg = ref('') // Messaggio informativo per la sessione scaduta
 
-const handleLogin = async () => {
-  errorMsg.value = ''
-  try {
-    const data = await authService.login(username.value, password.value)
-    
-    if (data.success) {
-      auth.login(data.user) 
-      router.push('/')
+  // Controllo se l'utente è stato reindirizzato qui a causa del token scaduto
+  onMounted(() => {
+    if (route.query.error === 'session_expired') {
+      infoMsg.value = 'La tua sessione è scaduta. Per favore, effettua di nuovo il login.'
     }
-  } catch (err) {
-    errorMsg.value = err.message
+  })
+
+  // Funzione per gestire il login
+  const handleLogin = async () => {
+    errorMsg.value = ''
+    infoMsg.value = '' // Reset del messaggio informativo al tentativo di login
+    try {
+      const data = await authService.login(username.value, password.value)
+      
+      if (data.success) {
+        // Passa l'oggeto 'data' allo store Pinia
+        auth.login(data) 
+        
+        // Torna alla pagina precedente
+        router.back();      
+      }
+    } catch (err) {
+      errorMsg.value = err.message
+    }
   }
-}
 </script>
 
 <template>
@@ -68,6 +83,8 @@ const handleLogin = async () => {
             />
           </div>
 
+          <p v-if="infoMsg" class="info-msg">{{ infoMsg }}</p>
+          
           <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
 
           <button type="submit" class="login-btn">
@@ -86,130 +103,142 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-.main-content {
-  /* Assicura che il footer stia in fondo anche se la pagina è vuota */
-  min-height: calc(100vh - 70px - 300px); /* Altezza schermo meno Navbar e Footer approssimativo */
-  background-color: #f4f7f9;
-}
+  .main-content {
+    /* Assicura che il footer stia in fondo anche se la pagina è vuota */
+    min-height: calc(100vh - 70px - 300px); /* Altezza schermo meno Navbar e Footer approssimativo */
+    background-color: #f4f7f9;
+  }
 
-.login-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-}
+  .login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+  }
 
-.login-card {
-  background: white;
-  width: 100%;
-  max-width: 400px;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
+  .login-card {
+    background: white;
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
+  .login-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
 
-.logo-circle {
-  width: 60px;
-  height: 60px;
-  background: #003366;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px auto;
-}
+  .logo-circle {
+    width: 60px;
+    height: 60px;
+    background: #003366;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+  }
 
-.logo-circle svg {
-  width: 32px;
-  height: 32px;
-}
+  .logo-circle svg {
+    width: 32px;
+    height: 32px;
+  }
 
-.login-header h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #003366;
-  margin-bottom: 5px;
-}
+  .login-header h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #003366;
+    margin-bottom: 5px;
+  }
 
-.login-header p {
-  color: #666;
-  font-size: 0.9rem;
-}
+  .login-header p {
+    color: #666;
+    font-size: 0.9rem;
+  }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
-.form-group label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-}
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #333;
+  }
 
-input {
-  padding: 12px 15px;
-  border: 2px solid #eee;
-  border-radius: 10px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-}
+  input {
+    padding: 12px 15px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
 
-input:focus {
-  outline: none;
-  border-color: #003366;
-}
+  input:focus {
+    outline: none;
+    border-color: #003366;
+  }
 
-.error-msg {
-  color: #dc3545;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-align: center;
-}
+  .error-msg {
+    color: #dc3545;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+  }
 
-.login-btn {
-  background: #003366;
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
+  /* Stile per il messaggio di sessione scaduta */
+  .info-msg {
+    color: #0056b3;
+    background-color: #e7f3ff;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid #b6d4fe;
+  }
 
-.login-btn:hover {
-  background: #002244;
-}
+  .login-btn {
+    background: #003366;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
 
-.login-btn:active {
-  transform: scale(0.98);
-}
+  .login-btn:hover {
+    background: #002244;
+  }
 
-.login-footer {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #888;
-}
+  .login-btn:active {
+    transform: scale(0.98);
+  }
 
-.login-footer a {
-  color: #003366;
-  font-weight: 700;
-  text-decoration: none;
-}
+  .login-footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #888;
+  }
+
+  .login-footer a {
+    color: #003366;
+    font-weight: 700;
+    text-decoration: none;
+  }
 </style>

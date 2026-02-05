@@ -66,7 +66,7 @@
         // ci pensa il backend a capire quale tempo terminare in base allo stato della partita
         await matchesService.endPeriod(props.match.matchId);
         
-        console.log("TEmpo di gioco terminato con successo.");
+        console.log("Tempo di gioco terminato con successo.");
         emit('refreshMatch');
       } catch (err) {
         console.error("Errore fine periodo:", err);

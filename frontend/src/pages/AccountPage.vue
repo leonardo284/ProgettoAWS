@@ -22,16 +22,16 @@ const handleLogout = () => {
       <div class="account-card" v-if="auth.isLoggedIn">
         <div class="profile-header">
           <div class="avatar-big">
-            {{ auth.user.username.charAt(0).toUpperCase() }}
+            {{ auth.user?.username.charAt(0).toUpperCase() }}
           </div>
-          <h1>{{ auth.user.username }}</h1>
-          <span class="role-badge">{{ auth.user.role }}</span>
+          <h1>{{ auth.user?.username }}</h1>
+          <span class="role-badge">{{ auth.user?.role }}</span>
         </div>
 
         <div class="profile-details">
           <div class="detail-item">
             <label>ID UTENTE</label>
-            <p>#{{ auth.user.id }}</p>
+            <p>#{{ auth.user?.id }}</p>
           </div>
           <div class="detail-item">
             <label>STATO ACCOUNT</label>

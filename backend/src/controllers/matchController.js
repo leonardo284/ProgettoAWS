@@ -1,6 +1,11 @@
 const Match = require('../models/match');
 const Standing = require('../models/standing');
 const PlayerStats = require('../models/playerStats');
+const jwt = require('jsonwebtoken'); 
+
+// aggiungo la chiave segreta JWT qui per semplicità
+// in un progetto reale andrebbe in un file .env
+const JWT_SECRET = "f64fe192a6429f0d98b8e2a2d268d563e53ef05d652c6431966b70b4be265979256a76e2b8780a44ae17f1c83d89e949a7a05422ca2d4db3278ef3e7b9edd56a";
 
 /**
  * GET /matches/:id
@@ -60,13 +65,34 @@ exports.listMatchesByTeam = (req, res) => {
     .catch(err => res.status(500).send(err));
 };
 
-
 /**
  * POST /matches/:id/start-first-half
  * Inizia il primo tempo di una partita
  */
 exports.startFirstHalf = async (req, res) => {
   try {
+    // --- CONTROLLO INTEGRATO DEL TOKEN ---
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Prende il token dopo "Bearer"
+
+    if (!token) {
+      return res.status(401).json({ message: "Token mancante: autenticazione richiesta" });
+    }
+
+    // Verifico che il token sia vero e non falsato usando la chiave segreta
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      // Verifico esplicitamente se è un administrator
+      if (decoded.role !== 'administrator') {
+        console.error(`PERMESSI INSUFFICIENTI: L'utente ${decoded.username} ha ruolo ${decoded.role}`);
+        return res.status(403).json({ message: "Richiesti privilegi di amministratore" });
+      }
+    } catch (err) {
+      return res.status(403).json({ message: "Token non valido o scaduto" });
+    }
+    // --------------------------------------
+
     // ricerco la partita tramite matchId
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
@@ -105,6 +131,27 @@ exports.startFirstHalf = async (req, res) => {
  */
 exports.startSecondHalf = async (req, res) => {
   try {
+    // --- CONTROLLO INTEGRATO DEL TOKEN ---
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Autenticazione richiesta" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      // Verifico esplicitamente se è un administrator
+      if (decoded.role !== 'administrator') {
+        console.error(`PERMESSI INSUFFICIENTI: L'utente ${decoded.username} ha ruolo ${decoded.role}`);
+        return res.status(403).json({ message: "Richiesti privilegi di amministratore" });
+      }
+    } catch (err) {
+      return res.status(403).json({ message: "Accesso negato: sessione non valida" });
+    }
+    // --------------------------------------
+
     // ricerco la partita tramite matchId
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
@@ -141,6 +188,27 @@ exports.startSecondHalf = async (req, res) => {
  */
 exports.addLiveEvent = async (req, res) => {
   try {
+    // --- CONTROLLO INTEGRATO DEL TOKEN ---
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "Token necessario per inserire eventi" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+
+      // Verifico esplicitamente se è un administrator
+      if (decoded.role !== 'administrator') {
+        console.error(`PERMESSI INSUFFICIENTI: L'utente ${decoded.username} ha ruolo ${decoded.role}`);
+        return res.status(403).json({ message: "Richiesti privilegi di amministratore" });
+      }
+    } catch (err) {
+      return res.status(403).json({ message: "Token non valido" });
+    }
+    // --------------------------------------
+
     // cerco la partita tramite matchId
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
@@ -157,7 +225,6 @@ exports.addLiveEvent = async (req, res) => {
     };
 
     // --- EVENTO GOAL ---
-    // aggiorno il risultato del match a seconda della squadra che ha segnato
     if (tipo === "GOAL") {
       if (Number(squadraId) === match.squadre.casa.teamId) 
         match.risultato.casa++;
@@ -184,7 +251,6 @@ exports.addLiveEvent = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /**
  * Logica interna per aggiornare la classifica
@@ -276,13 +342,38 @@ const _internalUpdatePlayerStats = async (match) => {
   }
 };
 
-
 /**
  * POST /matches/:id/end-period
- * Termina il tempo di gioco, se è la fine del secondo tempo, aggiorna tutto automaticamente.
  */
 exports.endPeriod = async (req, res) => {
   try {
+    // --- CONTROLLO INTEGRATO DEL TOKEN ---
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    //console.log("--- DEBUG END PERIOD ---");
+    //console.log("Header Authorization ricevuto:", authHeader);
+
+    if (!token) {
+      console.warn("Accesso negato: Token mancante nell'header della richiesta.");
+      return res.status(401).json({ message: "Azione non autorizzata" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      //console.log("Verifica JWT: SUCCESS");
+      //console.log("Dati utente nel token:", decoded);
+
+      // Verifico esplicitamente se è un administrator
+      if (decoded.role !== 'administrator') {
+        console.error(`PERMESSI INSUFFICIENTI: L'utente ${decoded.username} ha ruolo ${decoded.role}`);
+        return res.status(403).json({ message: "Richiesti privilegi di amministratore" });
+      }
+    } catch (err) {
+      return res.status(403).json({ message: "Sessione scaduta o non valida" });
+    }
+    // --------------------------------------
+
     // ricerco la partita tramite matchId
     const match = await Match.findOne({ matchId: Number(req.params.id) });
     if (!match) return res.status(404).json({ message: "Match non trovato" });
